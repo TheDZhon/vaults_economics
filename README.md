@@ -16,7 +16,7 @@ It can also generate an interactive (dark-themed) **HTML report** and optionally
 - **Work in progress**: this project is built for ad-hoc runs and may change without notice.
 - **May contain bugs**: outputs are best-effort and should be independently verified.
 - **Not audited / not production-ready**: do not use for automated decision making or financial operations.
-- **Network privacy**: by default it may use public RPC/IPFS endpoints; use `--rpc-url` / `ETH_RPC_URL` if you need control.
+- **Network privacy**: requires an RPC endpoint to be provided via `--rpc-url` or `ETH_RPC_URL` environment variable.
 
 ### Highlights
 
@@ -50,14 +50,14 @@ uv sync
 Run (fetches all reports from genesis, cached for fast subsequent runs):
 
 ```bash
+export ETH_RPC_URL="https://your-mainnet-rpc"
 uv run ve
 ```
 
-Run with your own RPC:
+Or specify RPC URL directly:
 
 ```bash
-export ETH_RPC_URL="https://your-mainnet-rpc"
-uv run ve --rpc-url "$ETH_RPC_URL"
+uv run ve --rpc-url "https://your-mainnet-rpc"
 ```
 
 HTML report (opens browser):
@@ -71,10 +71,11 @@ uv run ve --html
 - **Report discovery**: finds reports by scanning `ProcessingStarted(uint256,bytes32)` logs and decoding the corresponding tx input.
 - **Contract resolution**: resolves AccountingOracle/LazyOracle/VaultHub/Lido dynamically via **LidoLocator** (no hardcoded addresses).
 - **Historical on-chain reads**: reads on-chain metrics at each report's tx block (requires archive-capable RPC).
-- **Default RPCs**: if you omit `--rpc-url` and `ETH_RPC_URL`, a small list of public endpoints is tried.
+- **RPC required**: must provide an RPC URL via `--rpc-url` or `ETH_RPC_URL` environment variable.
 
 ### Handy CLI flags (cheat sheet)
 
+- **`--rpc-url URL`**: execution-layer RPC URL (required if `ETH_RPC_URL` is not set).
 - **`--html`**: generate and serve HTML report in browser.
 - **`--no-cache`**: disable caching for this run.
 - **`--locator ADDRESS`**: override LidoLocator (testnets).

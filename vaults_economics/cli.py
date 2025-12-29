@@ -4,7 +4,6 @@ import argparse
 import os
 import sys
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Iterable
 
 from tqdm import tqdm
 
@@ -13,7 +12,6 @@ from vaults_economics.console import print_report_with_deltas
 from vaults_economics.constants import (
     ACCOUNTING_ORACLE_MIN_ABI,
     DEFAULT_IPFS_GATEWAYS,
-    DEFAULT_PUBLIC_ETH_RPC_URLS,
     LAZY_ORACLE_MIN_ABI,
     LIDO_LOCATOR_MAINNET,
     VAULT_HUB_MIN_ABI,
@@ -25,31 +23,9 @@ from vaults_economics.onchain import collect_onchain_metrics
 from vaults_economics.parsing import parse_ipfs_report, parse_report_to_snapshots
 from vaults_economics.validation import validate_cross_report_consistency, validate_ipfs_report_metadata
 
-if TYPE_CHECKING:
-    from web3 import Web3  # pragma: no cover
-
 # Internal defaults (not exposed as CLI flags)
 DEFAULT_TIMEOUT = 30
 DEFAULT_VAULTS_PAGE_SIZE = 200
-
-
-def unique_nonempty(values: Iterable[str | None]) -> list[str]:
-    """Filter out empty values and duplicates."""
-    out: list[str] = []
-    seen: set[str] = set()
-    for v in values:
-        if not v:
-            continue
-        if v in seen:
-            continue
-        seen.add(v)
-        out.append(v)
-    return out
-
-
-def default_rpc_urls(env_rpc_url: str | None) -> list[str]:
-    """Default RPC URL candidates when user did not explicitly provide --rpc-url."""
-    return unique_nonempty([env_rpc_url, *DEFAULT_PUBLIC_ETH_RPC_URLS])
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -58,7 +34,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument(
         "--rpc-url",
         default=None,
-        help="Execution-layer RPC URL. Defaults to ETH_RPC_URL if set, otherwise tries a small list of public RPCs.",
+        help="Execution-layer RPC URL. Required if ETH_RPC_URL environment variable is not set.",
     )
     p.add_argument(
         "--locator",
@@ -90,25 +66,20 @@ def main(argv: list[str]) -> int:
         print("Missing dependency. Run: uv sync", file=sys.stderr)
         raise SystemExit(2) from ex
 
-    rpc_candidates = [args.rpc_url] if args.rpc_url else default_rpc_urls(os.getenv("ETH_RPC_URL"))
-    w3: "Web3" | None = None
-    rpc_url: str | None = None
-    for candidate in rpc_candidates:
-        probe = Web3(Web3.HTTPProvider(candidate, request_kwargs={"timeout": DEFAULT_TIMEOUT}))
-        if probe.is_connected():
-            w3 = probe
-            rpc_url = candidate
-            break
-
-    if w3 is None or rpc_url is None:
-        hint = "Provide --rpc-url or set ETH_RPC_URL."
-        if not args.rpc_url and not os.getenv("ETH_RPC_URL"):
-            hint = f"{hint} Tried defaults: {', '.join(DEFAULT_PUBLIC_ETH_RPC_URLS)}"
-        print(f"Error: failed to connect to an RPC. {hint}", file=sys.stderr)
+    # Require RPC URL to be provided either via --rpc-url or ETH_RPC_URL environment variable
+    rpc_url = args.rpc_url or os.getenv("ETH_RPC_URL")
+    if not rpc_url:
+        print(
+            "Error: RPC URL is required. Provide --rpc-url or set ETH_RPC_URL environment variable.",
+            file=sys.stderr,
+        )
         return 2
 
-    if not args.rpc_url and rpc_url in DEFAULT_PUBLIC_ETH_RPC_URLS:
-        print(f"ℹ️ Using default public RPC: {rpc_url}", file=sys.stderr)
+    # Test connection
+    w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={"timeout": DEFAULT_TIMEOUT}))
+    if not w3.is_connected():
+        print(f"Error: failed to connect to RPC at {rpc_url}", file=sys.stderr)
+        return 2
 
     # Resolve all contract addresses from LidoLocator.
     # This follows the pattern from lido-staking-vault-cli.

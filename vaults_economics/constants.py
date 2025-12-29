@@ -200,13 +200,6 @@ VAULT_HUB_MIN_ABI: list[dict] = [
     },
 ]
 
-# Used only when neither --rpc-url nor ETH_RPC_URL are provided.
-# Keep this list short and comprised of generally-available public endpoints.
-DEFAULT_PUBLIC_ETH_RPC_URLS = (
-    "https://eth.llamarpc.com",
-    "https://ethereum.publicnode.com",
-)
-
 # First vault report block (tx: 0xc79165e96f1d3267ef86f0c3d0156a2d060167f76c2549072b670eea9d16cc72)
 # No need to scan blocks before this - no vault reports exist.
 FIRST_VAULT_REPORT_BLOCK = 24089645

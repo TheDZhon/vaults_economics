@@ -3,12 +3,10 @@ from pathlib import Path
 
 import pytest
 
-from vaults_economics.cli import default_rpc_urls
 from vaults_economics.console import print_changes_section, print_report_with_deltas
 from vaults_economics.constants import (
     ACCOUNTING_ORACLE_MIN_ABI,
     DAYS_PER_YEAR,
-    DEFAULT_PUBLIC_ETH_RPC_URLS,
 )
 from vaults_economics.formatters import (
     annual_projection_wei,
@@ -228,14 +226,6 @@ def test_economic_mode_and_status_emojis():
 
     slashing = VaultSnapshot(**{**base.__dict__, "slashing_reserve_wei": 1})
     assert vault_status(slashing)[0] == "🟠"
-
-
-def test_default_rpc_urls_order_and_dedup():
-    env = "https://example.invalid"
-    urls = default_rpc_urls(env)
-    assert urls[0] == env
-    assert list(DEFAULT_PUBLIC_ETH_RPC_URLS) == urls[1:]
-    assert default_rpc_urls(None) == list(DEFAULT_PUBLIC_ETH_RPC_URLS)
 
 
 def test_locked_value_wei():
