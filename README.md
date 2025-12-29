@@ -1,199 +1,167 @@
-# Vault Economics (Lido AccountingOracle) — standalone script
+## Vault Economics (stVaults) — day‑to‑date report tool
 
-This folder is **fully standalone**: it does not import anything from the parent repo.
+[![Status: WIP](https://img.shields.io/badge/status-WIP-orange)](#wip--disclaimer)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Python: 3.10+](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)
+![Tests: pytest](https://img.shields.io/badge/tests-pytest-brightgreen?logo=pytest&logoColor=white)
+![Packaging: uv](https://img.shields.io/badge/packaging-uv-6f42c1)
 
-It scans Lido **AccountingOracle** daily `submitReportData(...)` submissions on Ethereum mainnet, extracts
-the `vaultsDataTreeCid` IPFS CID, downloads the Merkle-tree JSON, and prints a simple vault-economics
-summary for the latest report, plus:
+Standalone tool that scans Lido **AccountingOracle** daily `submitReportData(...)` submissions (Ethereum mainnet), extracts
+the `vaultsDataTreeCid` IPFS CID, downloads the Merkle-tree JSON, and prints a vault economics summary.
 
-- per-vault deltas **since last report**
-- per-vault deltas **since first report** (when `--reports >= 3`)
-- a final **aggregates** footer across all stVaults (totals + delta vs last/first)
-- **projected annual revenue** based on current daily fees (per-vault and aggregate)
+It can also generate an interactive (dark-themed) **HTML report** and optionally fetch **on-chain metrics** from LazyOracle/VaultHub.
 
-For scale (50–100 vaults), the "changes" sections omit unchanged vaults.
+This folder is **fully standalone**: it does not import code from `source_of_truth/`.
 
-By default, the script also fetches **on-chain metrics** from LazyOracle/VaultHub:
+### WIP / Disclaimer
 
-- Not Staked stVault Balance, Staked on validators
-- Collateral (locked), Total Lock (collateral + unsettled Lido fees), Unsettled Lido fees
-- Available to withdraw
-- stETH minting limit, Total/Remaining stETH minting capacity, Utilization Ratio, Health Factor
-- Reserve Ratio, Forced Rebalance Threshold, Healthy/pending disconnect flags
+- **Work in progress**: this project is built for ad-hoc runs and may change without notice.
+- **May contain bugs**: outputs are best-effort and should be independently verified.
+- **Not audited / not production-ready**: do not use for automated decision making or financial operations.
+- **Network privacy**: by default it may use public RPC/IPFS endpoints; use `--rpc-url` / `ETH_RPC_URL` if you need control.
 
-Contract addresses are resolved dynamically via **LidoLocator** (no hardcoded addresses).
+### Highlights
 
-## Setup
+- **Per-vault economics**: Total Value, stETH Liability (shares), Lido fee components, annualized projections.
+- **Deltas**:
+  - `--reports 2` → since last report
+  - `--reports >= 3` → since first report (plus aggregate deltas)
+- **Aggregates footer** across all vaults (totals + deltas).
+- **On-chain metrics (optional)**: locked, withdrawable, minting capacity, utilization, health factor, pending disconnect, etc.
+- **HTML report (optional)**: dashboard + vault cards + mobile-friendly layout.
+- **Caching** for IPFS, logs, txs, blocks, metrics.
+
+### Contents
+
+- [Quick start](#quick-start)
+- [Usage notes](#usage-notes)
+- [Handy CLI flags (cheat sheet)](#handy-cli-flags-cheat-sheet)
+- [Caching](#caching)
+- [Vault report field semantics (important)](#vault-report-field-semantics-important)
+- [Validation (warnings-only)](#validation-warnings-only)
+- [Development](#development)
+- [License](#license)
+
+### Quick start
+
+Install:
 
 ```bash
 uv sync
 ```
 
-## Run
+Run (latest report only):
 
-After installing, you can run the script using the entry point:
+```bash
+uv run vaults-economics-dtd --reports 1
+```
+
+Run with your own RPC:
 
 ```bash
 export ETH_RPC_URL="https://your-mainnet-rpc"
 uv run vaults-economics-dtd --rpc-url "$ETH_RPC_URL" --reports 7
 ```
 
-Or run it directly as a module:
+Run as a module:
 
 ```bash
-uv run python -m vaults_economics.vaults_economics_dtd --rpc-url "$ETH_RPC_URL" --reports 7
+uv run python -m vaults_economics.vaults_economics_dtd --reports 7
 ```
 
-**Quick start (latest report only):**
-
-```bash
-uv run vaults-economics-dtd --reports 1
-```
-
-**HTML report (opens in browser):**
+HTML report (opens browser):
 
 ```bash
 uv run vaults-economics-dtd --reports 1 --html
 ```
 
-Notes:
+### Usage notes
 
-- Use `--reports 1` to focus on the latest report.
-- Use `--reports 2` for "since last report".
-- Use `--reports >= 3` to also get "since first report".
-- Use `--html` to generate and serve an interactive HTML report (opens default browser).
-- Use `--html-port PORT` to specify a custom port for the HTML server.
-- Use `--no-onchain` to skip on-chain metrics (fewer RPC calls).
-- Use `--onchain-block report` (default) to read on-chain data at each report's tx block, or
-  `--onchain-block latest` for non-archive nodes.
-- Use `--locator ADDRESS` to override the LidoLocator address for testnets.
+- **Report discovery**: finds reports by scanning `ProcessingStarted(uint256,bytes32)` logs and decoding the corresponding tx input.
+- **Contract resolution**: resolves AccountingOracle/LazyOracle/VaultHub/Lido dynamically via **LidoLocator** (no hardcoded addresses).
+- **Historical on-chain reads**: `--onchain-block report` (default) reads at each report tx block and typically requires an archive-capable RPC.
+- **Non-archive RPCs**: use `--onchain-block latest`.
+- **Default RPCs**: if you omit `--rpc-url` and `ETH_RPC_URL`, a small list of public endpoints is tried.
 
-If you omit `--rpc-url` and `ETH_RPC_URL`, the script will try a small list of public mainnet RPC endpoints by default.
+### Handy CLI flags (cheat sheet)
 
-## Caching
+- **`--reports N`**: how many latest reports to analyze (1 = latest only).
+- **`--days N`**: how far back to scan for reports.
+- **`--no-onchain`**: skip LazyOracle/VaultHub metrics (fewer RPC calls).
+- **`--onchain-block report|latest|<block>`**: choose block for on-chain reads.
+- **`--html` / `--html-port`**: generate and serve HTML report.
+- **`--analytics`**: show analytics summary + rankings.
+- **`--no-cache` / `--clear-cache`**: control local cache.
+- **`--locator ADDRESS`**: override LidoLocator (testnets).
 
-The script caches fetched data to avoid redundant network requests:
+### Caching
+
+Cached items:
 
 - **IPFS content** (by CID)
-- **Onchain logs** (by filter parameters)
+- **On-chain logs** (by filter parameters)
 - **Transactions** (by transaction hash)
 - **Blocks** (by block identifier)
-- **Onchain metrics** (by block identifier and vault keys)
+- **On-chain metrics** (by block identifier and vault keys)
 
-**Cache location**: `~/.cache/.vaults_economics_cache/` (or `XDG_CACHE_HOME/.vaults_economics_cache/` if `XDG_CACHE_HOME` is set)
+Cache location:
 
-**Clear cache**:
+- `~/.cache/.vaults_economics_cache/` (or `XDG_CACHE_HOME/.vaults_economics_cache/`)
+
+Clear cache:
 
 ```bash
 uv run vaults-economics-dtd --clear-cache
 ```
 
-**Disable caching** (fetch fresh data):
+Disable cache for a run:
 
 ```bash
 uv run vaults-economics-dtd --no-cache --reports 7
 ```
 
-Caching is enabled by default and significantly speeds up repeated runs when analyzing the same reports or blocks. The cache is versioned, so you can safely clear it if you encounter issues with stale data.
+### Vault report field semantics (important)
 
-## Test
+The IPFS JSON is a Merkle-tree dump used by `LazyOracle.updateVaultData(...)` → `VaultHub.applyVaultReport(...)`.
+
+- **`totalValueWei`**: oracle-reported total value at `refSlot` (may be partially quarantined on-chain by LazyOracle).
+- **`fee`**: cumulative Lido protocol fees accrued (wei) as of `refSlot` (not “unsettled”).
+- **`liabilityShares`**: current stETH liability nominated in shares.
+- **`maxLiabilityShares`**: high-water mark of liability shares within the oracle period (used to compute `locked`).
+- **`slashingReserve`**: extra ETH locked due to slashing risk; contributes to minimal reserve.
+
+The report’s `extraValues` are convenience fields (not part of the Merkle root):
+
+- **`inOutDelta`**: cumulative deposits − withdrawals counter (wei, can be negative).
+- **`prevFee`** + fee components explain the delta in cumulative `fee`.
+- **`infraFee` / `liquidityFee` / `reservationFee`**: per-period Lido fee components.
+
+### Validation (warnings-only)
+
+By default, the tool validates common contract invariants (warnings go to stderr):
+
+- Fee consistency: `fee == prevFee + infraFee + liquidityFee + reservationFee`
+- `maxLiabilityShares >= liabilityShares`
+- Cumulative fees non-decreasing across reports when `prevFee` links correctly
+- Non-negative values + basic metadata checks (format/root/refSlot)
+
+### Development
+
+Run tests:
 
 ```bash
 uv sync --all-extras
 uv run pytest -q
 ```
 
-## Pre-commit
+Install pre-commit:
 
 ```bash
 uv sync --all-extras
 uv run pre-commit install
 ```
 
-Run hooks manually:
+### License
 
-```bash
-uv run pre-commit run --all-files
-```
-
-## HTML Report
-
-Generate a beautiful dark-themed HTML report and view it in your browser:
-
-```bash
-uv run vaults-economics-dtd --reports 1 --html
-```
-
-The HTML report includes:
-
-- **Aggregates dashboard**: total vaults, economic modes, total value, fees, and projected annual revenue
-- **Individual vault cards**: status badges, metrics, fee breakdown with annual projections, on-chain data
-- **Responsive design**: works on desktop and mobile
-- **Modern styling**: dark theme with Outfit + JetBrains Mono fonts
-
-The server runs locally on `127.0.0.1` (auto-selects an available port). Press `Ctrl+C` to stop.
-
-## Notes
-
-- **CID source**: the CID is the `vaultsDataTreeCid` string inside the `submitReportData` tx input.
-- **Report discovery**: the script finds recent reports by scanning `ProcessingStarted(uint256,bytes32)` logs
-  and decoding the corresponding transactions. Use `--reports` and `--days` to bound the scan window.
-- **Contract resolution**: all contract addresses (AccountingOracle, LazyOracle, VaultHub, Lido) are resolved
-  dynamically via LidoLocator. Use `--locator ADDRESS` for testnets.
-- **IPFS gateways**: uses a small default list of public gateways (see `vaults_economics/constants.py`).
-- **On-chain metrics**: derived from LazyOracle/VaultHub view calls; historical reads (`--onchain-block report`)
-  require an archive-capable RPC provider.
-- **Annual projections**: calculated by multiplying daily fees by 365, assuming current fees continue.
-- **Caching**: by default, the script caches IPFS content, onchain logs, transactions, blocks, and metrics to avoid
-  redundant network requests. Use `--clear-cache` to clear all cached data, or `--no-cache` to disable caching for a run.
-- **Validation**: the script validates report invariants and metadata (format/root checks, fee consistency,
-  maxLiabilityShares >= liabilityShares, non-negative fee components).
-
-## Vault report field semantics (important)
-
-The IPFS JSON is a Merkle-tree dump used by `LazyOracle.updateVaultData(...)` → `VaultHub.applyVaultReport(...)`.
-Some fields are easy to misread:
-
-- **`totalValueWei`**: *oracle-reported* total value for the vault at `refSlot` (may be partially quarantined on-chain by `LazyOracle`).
-- **`fee`**: cumulative **Lido protocol fees** accrued on the vault (wei) as of `refSlot` (not “unsettled”).
-- **`liabilityShares`**: current **stETH Liability** for the vault, nominated in shares, as of `refSlot`.
-- **`maxLiabilityShares`**: **NOT a “capacity/share limit”**. It is a *high-water mark* of liability shares within the
-  current oracle period (used by `VaultHub` to compute `locked`). It can be **greater than** `liabilityShares` if the
-  vault reduced liability (burn/rebalance) after reaching a higher peak during the period.
-- **`slashingReserve`**: extra ETH (wei) that must remain locked due to slashing risk; contributes to the **Minimal Reserve**
-  (on-chain minimal reserve = max(1 ETH, slashingReserve)).
-
-The report’s `extraValues` are convenience fields (not part of the Merkle root):
-
-- **`inOutDelta`**: cumulative **deposits − withdrawals** counter (wei) tracked by `VaultHub` (can be negative).
-- **`prevFee`**: previous cumulative fee value; together with `infraFee`/`liquidityFee`/`reservationFee` it explains the
-  delta in `fee` for this report.
-- **`infraFee`**: Lido **Infrastructure fee** accrued during this report period.
-- **`liquidityFee`**: Lido **Liquidity fee** accrued during this report period.
-- **`reservationFee`**: Lido **Reservation liquidity fee** accrued during this report period.
-
-## Validation
-
-By default, the script validates report invariants enforced by the on-chain contracts:
-
-- **Fee consistency**: `cumulative_lido_fees_wei == prevFee + infraFee + liquidityFee + reservationFee`
-  (the Merkle tree `fee` field should equal the sum of previous fees plus this period's fee components)
-- **maxLiabilityShares >= liabilityShares**: contract enforces this within each report
-- **Cumulative fees non-decreasing**: when comparing the same vault across reports, cumulative fees should only increase
-  **if** the report’s `prevFee` matches the prior report’s cumulative fee (reconnects reset fees)
-- **Non-negative values**: totalValue, fees (including fee components), shares, and slashing reserve should be non-negative
-- **Report metadata sanity**: when present, `format` is `standard-v1`, `refSlot` matches the tx, and
-  the report root matches `vaultsDataTreeRoot`
-
-Validation warnings are printed to stderr but do not stop execution.
-
-## Limitations
-
-- **Quarantine**: `totalValueWei` in reports may be partially quarantined on-chain by `LazyOracle` for sudden increases.
-  The report section shows the *reported* value; the on-chain section (when enabled) shows applied `totalValue`.
-- **Vault lifecycle**: Vaults can disconnect and reconnect, which resets their fee counters. Cross-report validation
-  accounts for this by only checking vaults present in both reports.
-- **Share rate**: `simulatedShareRate` is used for display conversions (shares → ETH). If invalid (≤ 0), conversions show "n/a".
-- **Metrics scope**: The report contains Total Value, stETH Liability, Lido fees, and slashing reserve. The script
-  augments this with on-chain metrics (LazyOracle/VaultHub). It does **not** compute Node Operator fee, APR,
-  or stETH rebase; those require additional off-chain data and consensus-layer inputs.
+- **This tool**: MIT — see `LICENSE`.
+- **Vendored upstream code in `source_of_truth/`**: governed by its own license files inside that directory (multiple licenses may apply).

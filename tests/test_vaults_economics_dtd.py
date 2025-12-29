@@ -3,12 +3,13 @@ from pathlib import Path
 
 import pytest
 
+from vaults_economics.cli import default_rpc_urls, resolve_onchain_block
+from vaults_economics.console import print_changes_section, print_report_with_deltas
 from vaults_economics.constants import (
     ACCOUNTING_ORACLE_MIN_ABI,
     DAYS_PER_YEAR,
     DEFAULT_PUBLIC_ETH_RPC_URLS,
 )
-from vaults_economics.models import ReportSubmission, VaultSnapshot
 from vaults_economics.formatters import (
     annual_projection_wei,
     as_int,
@@ -20,6 +21,8 @@ from vaults_economics.formatters import (
     locked_value_wei,
     vault_status,
 )
+from vaults_economics.ipfs import build_gateway_url
+from vaults_economics.models import ReportSubmission, VaultSnapshot
 from vaults_economics.parsing import (
     decode_submit_report_data_tx,
     parse_report_to_snapshots,
@@ -34,9 +37,6 @@ from vaults_economics.validation import (
     validate_ipfs_report_metadata,
     validate_vault_snapshot,
 )
-from vaults_economics.ipfs import build_gateway_url
-from vaults_economics.cli import default_rpc_urls, resolve_onchain_block
-from vaults_economics.console import print_changes_section, print_report_with_deltas
 
 
 def test_build_gateway_url_variants():

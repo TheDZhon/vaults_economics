@@ -16,7 +16,7 @@ from vaults_economics.formatters import (
     shares_to_wei,
     vault_status,
 )
-from vaults_economics.models import OnchainVaultMetrics, ReportSubmission, VaultAggregates, VaultSnapshot
+from vaults_economics.models import OnchainVaultMetrics, ReportSubmission, VaultSnapshot
 from vaults_economics.reports import compute_aggregates, fee_delta_wei, zero_snapshot
 
 
@@ -59,7 +59,7 @@ def print_current_report(
         if s.prev_cumulative_lido_fees_wei:
             print(f"      • Prev cumulative:   {format_wei_sci(s.prev_cumulative_lido_fees_wei)} wei")
         # Annual projection (assuming same daily fees)
-        print(f"   📅 Projected Annual Revenue (if daily fees continue):")
+        print("   📅 Projected Annual Revenue (if daily fees continue):")
         print(f"      • Total Lido fees:    {format_annual_projection(fee_delta)}")
         print(f"         - Infrastructure:  {format_annual_projection(s.infra_fee_wei)}")
         print(f"         - Liquidity:       {format_annual_projection(s.liquidity_fee_wei)}")
@@ -113,8 +113,13 @@ def print_current_report(
                 remaining_wei = max(mintable_wei - liability_wei, 0)
                 utilization = Decimal(liability_wei) / Decimal(mintable_wei) if mintable_wei > 0 else None
                 health_factor = (
-                    (Decimal(onchain_total) * (Decimal(TOTAL_BASIS_POINTS - onchain_metrics.forced_rebalance_threshold_bp)
-                     / Decimal(TOTAL_BASIS_POINTS)))
+                    (
+                        Decimal(onchain_total)
+                        * (
+                            Decimal(TOTAL_BASIS_POINTS - onchain_metrics.forced_rebalance_threshold_bp)
+                            / Decimal(TOTAL_BASIS_POINTS)
+                        )
+                    )
                     / Decimal(liability_wei)
                     if liability_wei > 0
                     else None
@@ -329,7 +334,9 @@ def print_aggregates_section(
     print(f"   • Peak (period):     {format_wei_sci(cur_agg.max_liability_shares)} shares  ({peak_hint})")
     print(f"🛡️ Slashing reserve (total): {format_wei_sci(cur_agg.slashing_reserve_wei)} wei (part of Minimal Reserve)")
     minimal_reserve_total = sum(max(s.slashing_reserve_wei, CONNECT_DEPOSIT_WEI) for s in cur_snap.values())
-    print(f"🧱 Minimal Reserve (sum): {format_eth(minimal_reserve_total, decimals=6)} (sum of max(1 ETH, slashing reserve))")
+    print(
+        f"🧱 Minimal Reserve (sum): {format_eth(minimal_reserve_total, decimals=6)} (sum of max(1 ETH, slashing reserve))"
+    )
     if onchain_cur:
         block_label = f"{onchain_block}" if onchain_block is not None else "latest"
         onchain_total = sum(m.onchain_total_value_wei for m in onchain_cur.values())
@@ -341,9 +348,7 @@ def print_aggregates_section(
         mintable_total = sum(m.mintable_steth_wei for m in onchain_cur.values())
         liability_total_wei = shares_to_wei(cur_agg.liability_shares, current.simulated_share_rate)
         remaining_total = max(mintable_total - liability_total_wei, 0)
-        utilization_total = (
-            Decimal(liability_total_wei) / Decimal(mintable_total) if mintable_total > 0 else None
-        )
+        utilization_total = Decimal(liability_total_wei) / Decimal(mintable_total) if mintable_total > 0 else None
 
         print(f"\n🧮 On-chain aggregates (block {block_label}):")
         print(f"   • Total Value (on-chain): {format_eth(onchain_total, decimals=6)}")
@@ -351,7 +356,9 @@ def print_aggregates_section(
         print(f"   • Staked on validators: {format_eth(staked_total, decimals=6)}")
         print(f"   • Collateral (locked): {format_eth(locked_total, decimals=6)}")
         print(f"   • Unsettled Lido fees: {format_eth(unsettled_total, decimals=6)}")
-        print(f"   • Total Lock (collateral + unsettled Lido fees): {format_eth(locked_total + unsettled_total, decimals=6)}")
+        print(
+            f"   • Total Lock (collateral + unsettled Lido fees): {format_eth(locked_total + unsettled_total, decimals=6)}"
+        )
         print(f"   • Available to withdraw: {format_eth(withdrawable_total, decimals=6)}")
         if current.simulated_share_rate > 0:
             print(f"   • Total stETH minting capacity: {format_eth(mintable_total, decimals=6)}")
@@ -432,4 +439,3 @@ def print_report_with_deltas(
         onchain_cur=cur_onchain,
         onchain_block=cur_block,
     )
-

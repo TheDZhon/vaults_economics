@@ -3,7 +3,6 @@
 from decimal import Decimal
 
 from vaults_economics.constants import (
-    CONNECT_DEPOSIT_WEI,
     DAYS_PER_YEAR,
     SHARE_RATE_SCALE,
     SHARE_SCALE,
@@ -74,7 +73,7 @@ SENTINEL_THRESHOLD_WEI = 10**68  # ~10^50 ETH
 
 def format_eth(value_wei: int, *, decimals: int = 9, approx: bool = False) -> str:
     """Format wei value as ETH.
-    
+
     Values above a certain threshold (likely UINT256_MAX or similar sentinel values)
     are displayed as "∞" to avoid layout-breaking huge numbers.
     """

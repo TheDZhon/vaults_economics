@@ -372,16 +372,18 @@ def calculate_growth_metrics(
 
     # Fee growth
     fee_change = latest_agg.lido_fees_this_report_wei - first_agg.lido_fees_this_report_wei
-    fee_growth_pct = (fee_change * 100) / first_agg.lido_fees_this_report_wei if first_agg.lido_fees_this_report_wei > 0 else 0
+    fee_growth_pct = (
+        (fee_change * 100) / first_agg.lido_fees_this_report_wei if first_agg.lido_fees_this_report_wei > 0 else 0
+    )
 
     # Liability growth
     liability_change = latest_agg.liability_shares - first_agg.liability_shares
-    liability_growth_pct = (liability_change * 100) / first_agg.liability_shares if first_agg.liability_shares > 0 else 0
+    liability_growth_pct = (
+        (liability_change * 100) / first_agg.liability_shares if first_agg.liability_shares > 0 else 0
+    )
 
     # Cumulative fees over period
-    total_fees_period = sum(
-        compute_aggregates(snap).lido_fees_this_report_wei for snap in snapshots
-    )
+    total_fees_period = sum(compute_aggregates(snap).lido_fees_this_report_wei for snap in snapshots)
 
     return {
         "has_trend_data": True,
@@ -444,7 +446,9 @@ def format_analytics_summary(analytics: ProtocolAnalytics) -> str:
         f"   Capital Locked Ratio: {analytics.capital_locked_ratio * 100:.1f}%",
         "",
         "⚠️  RISK METRICS",
-        f"   Avg Health Factor: {analytics.avg_health_factor:.2f}" if analytics.avg_health_factor else "   Avg Health Factor: N/A",
+        f"   Avg Health Factor: {analytics.avg_health_factor:.2f}"
+        if analytics.avg_health_factor
+        else "   Avg Health Factor: N/A",
         f"   High Risk Vaults: {analytics.high_risk_vault_count}",
         f"   Near Rebalance Threshold: {analytics.vaults_near_rebalance}",
         "",

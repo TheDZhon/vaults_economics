@@ -29,6 +29,15 @@ jobs:
       - name: Sync (locked)
         run: uv sync --locked --all-extras
 
+      - name: Lint (ruff)
+        run: uv run ruff check .
+
+      - name: Format check (ruff)
+        run: uv run ruff format --check .
+
+      - name: Format check (README)
+        run: uv run mdformat --check README.md
+
       - name: Run tests
         run: uv run pytest -q
 

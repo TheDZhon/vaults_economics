@@ -1,34 +1,30 @@
-import json
-from pathlib import Path
-import pytest
-from vaults_economics.models import VaultSnapshot
-from vaults_economics.parsing import parse_report_to_snapshots
 from vaults_economics.formatters import as_int
+from vaults_economics.parsing import parse_report_to_snapshots
 
 
 def test_parse_report_strict_source_of_truth_compliance():
     """
-    Validates parsing against a JSON structure that strictly mimics 
+    Validates parsing against a JSON structure that strictly mimics
     source_of_truth/lido-oracle/src/modules/accounting/types.py conventions.
     """
-    
+
     # 1. Simulate a JSON payload as produced by StandardMerkleTree + lido-oracle ExtraData
     # Structure based on StakingVaultIpfsReport in types.py
-    
+
     source_of_truth_json = {
         "format": "standard-v1",
         "tree": ["0x..."],
         "values": [
             {
                 "value": [
-                    "0xVaultAddress1",      # 0: vaultAddress
+                    "0xVaultAddress1",  # 0: vaultAddress
                     "1000000000000000000",  # 1: totalValueWei (1 ETH) - often string in JSON if large
-                    200,                    # 2: fee (int)
-                    "500000000000000000",   # 3: liabilityShares (0.5 stETH shares)
-                    "600000000000000000",   # 4: maxLiabilityShares (0.6 stETH shares)
-                    0                       # 5: slashingReserve
+                    200,  # 2: fee (int)
+                    "500000000000000000",  # 3: liabilityShares (0.5 stETH shares)
+                    "600000000000000000",  # 4: maxLiabilityShares (0.6 stETH shares)
+                    0,  # 5: slashingReserve
                 ],
-                "treeIndex": 0
+                "treeIndex": 0,
             }
         ],
         "leafIndexToData": {
@@ -37,26 +33,26 @@ def test_parse_report_strict_source_of_truth_compliance():
             "fee": 2,
             "liabilityShares": 3,
             "maxLiabilityShares": 4,
-            "slashingReserve": 5
+            "slashingReserve": 5,
         },
         "extraValues": {
             "0xvaultaddress1": {  # lido-oracle keys might be lowercased or checksummed, script handles both
-                "inOutDelta": "-500",       # str
-                "prevFee": "100",           # str
-                "infraFee": "50",           # str
-                "liquidityFee": "50",       # str
-                "reservationFee": "0"       # str
+                "inOutDelta": "-500",  # str
+                "prevFee": "100",  # str
+                "infraFee": "50",  # str
+                "liquidityFee": "50",  # str
+                "reservationFee": "0",  # str
             }
-        }
+        },
     }
 
     # 2. Parse
     snapshots = parse_report_to_snapshots(source_of_truth_json)
-    
+
     # 3. Verify
     assert "0xvaultaddress1" in snapshots
     s = snapshots["0xvaultaddress1"]
-    
+
     # Verify values
     assert s.vault == "0xVaultAddress1"
     assert s.total_value_wei == 10**18
@@ -64,13 +60,14 @@ def test_parse_report_strict_source_of_truth_compliance():
     assert s.liability_shares == 5 * 10**17
     assert s.max_liability_shares == 6 * 10**17
     assert s.slashing_reserve_wei == 0
-    
+
     # Verify extra values (parsed from strings to ints)
     assert s.in_out_delta_wei == -500
     assert s.prev_cumulative_lido_fees_wei == 100
     assert s.infra_fee_wei == 50
     assert s.liquidity_fee_wei == 50
     assert s.reservation_fee_wei == 0
+
 
 def test_as_int_robustness():
     """Challenge as_int with various types found in wild JSONs."""

@@ -342,12 +342,15 @@ def main(argv: list[str]) -> int:
         growth = calculate_growth_metrics(submissions, snapshots)
         if growth.get("has_trend_data"):
             from decimal import Decimal
+
             from vaults_economics.constants import WEI_PER_ETH
 
             print("📈 GROWTH TRENDS")
             print(f"   Period: {growth['period_days']} days ({growth['reports_count']} reports)")
             tvl_change_sign = "+" if growth["tvl_change_wei"] >= 0 else ""
-            print(f"   TVL: {Decimal(growth['tvl_first_wei']) / WEI_PER_ETH:.2f} → {Decimal(growth['tvl_latest_wei']) / WEI_PER_ETH:.2f} ETH ({tvl_change_sign}{growth['tvl_growth_pct']:.1f}%)")
+            print(
+                f"   TVL: {Decimal(growth['tvl_first_wei']) / WEI_PER_ETH:.2f} → {Decimal(growth['tvl_latest_wei']) / WEI_PER_ETH:.2f} ETH ({tvl_change_sign}{growth['tvl_growth_pct']:.1f}%)"
+            )
             print(f"   Vaults: {growth['vaults_first']} → {growth['vaults_latest']} ({growth['vaults_change']:+d})")
             fee_sign = "+" if growth["fee_change_wei"] >= 0 else ""
             print(f"   Daily Fee: {fee_sign}{growth['fee_growth_pct']:.1f}% change")
@@ -361,10 +364,14 @@ def main(argv: list[str]) -> int:
             print("   " + "-" * 60)
             for r in rankings[:5]:
                 from decimal import Decimal
+
                 from vaults_economics.constants import WEI_PER_ETH
+
                 fee_eth = Decimal(r.daily_fee_wei) / WEI_PER_ETH
                 print(f"   #{r.rank} {r.vault[:10]}...{r.vault[-6:]}")
-                print(f"      Score: {r.score:.3f} | Fee: {fee_eth:.6f} ETH/day | Util: {r.utilization*100:.1f}% | Risk: {r.risk_tier}")
+                print(
+                    f"      Score: {r.score:.3f} | Fee: {fee_eth:.6f} ETH/day | Util: {r.utilization * 100:.1f}% | Risk: {r.risk_tier}"
+                )
             print("")
 
     return 0

@@ -9,6 +9,12 @@ import webbrowser
 from datetime import datetime, timezone
 from typing import Any
 
+from vaults_economics.analytics import (
+    ProtocolAnalytics,
+    calculate_growth_metrics,
+    calculate_protocol_analytics,
+    rank_vaults_by_performance,
+)
 from vaults_economics.constants import BEACONCHA_BASE, ETHERSCAN_BASE
 from vaults_economics.formatters import (
     economic_mode,
@@ -22,12 +28,6 @@ from vaults_economics.formatters import (
 )
 from vaults_economics.models import OnchainVaultMetrics, ReportSubmission, VaultSnapshot
 from vaults_economics.reports import compute_aggregates, fee_delta_wei
-from vaults_economics.analytics import (
-    calculate_protocol_analytics,
-    calculate_growth_metrics,
-    rank_vaults_by_performance,
-    ProtocolAnalytics,
-)
 
 # HTML Template
 _HTML_TEMPLATE = """<!DOCTYPE html>
@@ -604,6 +604,7 @@ def generate_analytics_section(
 ) -> str:
     """Generate the analytics section HTML."""
     from decimal import Decimal
+
     from vaults_economics.constants import WEI_PER_ETH
 
     # Utilization progress bar color - cap the bar at 100% but keep the displayed value uncapped
@@ -678,7 +679,6 @@ def generate_analytics_section(
     for r in rankings[:5]:  # Top 5
         risk_class = r.risk_tier
         vault_short = r.vault[:8] + "..." + r.vault[-6:]
-        hf_display = f"{r.health_factor:.2f}" if r.health_factor else "N/A"
         util_display = f"{r.utilization * 100:.1f}"
         top_performers_rows += f"""
         <tr>
@@ -798,8 +798,6 @@ def generate_html_report(
     onchain_cur = onchain_metrics_list[0] if onchain_metrics_list else None
     onchain_block = onchain_blocks[0] if onchain_blocks else None
 
-    ts_formatted = datetime.fromtimestamp(current.block_timestamp, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-
     parts: list[str] = []
 
     # Header
@@ -817,7 +815,9 @@ def generate_html_report(
     growth_metrics = calculate_growth_metrics(submissions, snapshots)
     vault_rankings = rank_vaults_by_performance(cur_snap, onchain_cur, current.simulated_share_rate)
 
-    parts.append(generate_analytics_section(protocol_analytics, growth_metrics, vault_rankings, current.simulated_share_rate))
+    parts.append(
+        generate_analytics_section(protocol_analytics, growth_metrics, vault_rankings, current.simulated_share_rate)
+    )
 
     # Aggregates Section
     parts.append(f"""
@@ -904,7 +904,7 @@ def generate_html_report(
                 </div>
                 <div class="vault-metric">
                     <div class="label">{label_with_hint("stETH Liability", "Current stETH liability converted from shares using simulatedShareRate. Represents stETH minted against this vault.")}</div>
-                    <div class="value">{format_eth(liab_wei, decimals=6) if current.simulated_share_rate else 'n/a'}</div>
+                    <div class="value">{format_eth(liab_wei, decimals=6) if current.simulated_share_rate else "n/a"}</div>
                 </div>
                 <div class="vault-metric">
                     <div class="label">{label_with_hint("Liability Shares", "Current stETH liability in shares (Lido's internal accounting unit). Used to calculate locked collateral.")}</div>
@@ -974,7 +974,7 @@ def generate_html_report(
                     </div>
                     <div class="onchain-item">
                         <div class="label">{label_with_hint("Healthy", "Vault health status. Unhealthy vaults may be subject to forced rebalance if reserve ratio falls below forced rebalance threshold.")}</div>
-                        <div class="value">{'✅ Yes' if onchain_metrics.is_healthy else '❌ No'}</div>
+                        <div class="value">{"✅ Yes" if onchain_metrics.is_healthy else "❌ No"}</div>
                     </div>
                 </div>
             </div>"""

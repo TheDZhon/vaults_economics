@@ -3,7 +3,6 @@
 import sys
 from typing import TYPE_CHECKING, Any, Iterable
 
-from vaults_economics.constants import LAZY_ORACLE_MIN_ABI, VAULT_HUB_MIN_ABI
 from vaults_economics.formatters import as_int
 from vaults_economics.models import OnchainVaultMetrics
 from vaults_economics.parsing import parse_lazy_oracle_vault_info
@@ -62,17 +61,13 @@ def collect_onchain_metrics(
 
         # Call VaultHub for fields not in LazyOracle
         try:
-            total_value = vault_hub_contract.functions.totalValue(vault_addr).call(
-                block_identifier=block_identifier
-            )
+            total_value = vault_hub_contract.functions.totalValue(vault_addr).call(block_identifier=block_identifier)
         except Exception as ex:  # pylint: disable=broad-exception-caught
             print(f"⚠️  totalValue failed for {vault_addr}: {ex}", file=sys.stderr)
             total_value = 0
 
         try:
-            locked = vault_hub_contract.functions.locked(vault_addr).call(
-                block_identifier=block_identifier
-            )
+            locked = vault_hub_contract.functions.locked(vault_addr).call(block_identifier=block_identifier)
         except Exception as ex:  # pylint: disable=broad-exception-caught
             print(f"⚠️  locked failed for {vault_addr}: {ex}", file=sys.stderr)
             locked = 0
@@ -95,9 +90,7 @@ def collect_onchain_metrics(
             unsettled_fees = 0
 
         try:
-            is_healthy = vault_hub_contract.functions.isVaultHealthy(vault_addr).call(
-                block_identifier=block_identifier
-            )
+            is_healthy = vault_hub_contract.functions.isVaultHealthy(vault_addr).call(block_identifier=block_identifier)
         except Exception as ex:  # pylint: disable=broad-exception-caught
             print(f"⚠️  isVaultHealthy failed for {vault_addr}: {ex}", file=sys.stderr)
             is_healthy = True  # Default to healthy if call fails

@@ -7,7 +7,7 @@ license = { text = "MIT" }
 classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
-requires-python = ">=3.8,<4"
+requires-python = ">=3.10,<4"
 dependencies = [
     "requests>=2.31.0",
     "web3>=7.8.0,<8",
@@ -31,8 +31,17 @@ vaults = "vaults_economics:_entry_point"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["vaults_economics"]
+
+[tool.hatch.build.targets.sdist]
+# Keep sdists small and standalone (this repo contains large vendored code under `source_of_truth/`).
+exclude = [
+    "source_of_truth/**",
+]
+
 [tool.ruff]
-target-version = "py38"
+target-version = "py310"
 line-length = 120
 
 [tool.ruff.lint]

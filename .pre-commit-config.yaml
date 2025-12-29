@@ -9,17 +9,17 @@ repos:
         always_run: true
         stages: [pre-commit]
 
-      - id: ruff-format-vaults-economics-dtd
-        name: ruff format (vaults_economics_dtd.py)
-        entry: uv run ruff format vaults_economics/vaults_economics_dtd.py
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format .
         language: system
         pass_filenames: false
         always_run: true
         stages: [pre-commit]
 
-      - id: ruff-check-vaults-economics-dtd
-        name: ruff check (vaults_economics_dtd.py)
-        entry: uv run ruff check --fix vaults_economics/vaults_economics_dtd.py
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check .
         language: system
         pass_filenames: false
         always_run: true
@@ -31,5 +31,5 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-        stages: [pre-commit]
+        stages: [pre-push]
 
