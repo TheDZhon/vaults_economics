@@ -63,7 +63,14 @@ uv run ve --rpc-url "https://your-mainnet-rpc"
 HTML report (opens browser):
 
 ```bash
+export ETH_RPC_URL="https://your-mainnet-rpc"
 uv run ve --html
+```
+
+Or with inline RPC URL:
+
+```bash
+uv run ve --rpc-url "https://your-mainnet-rpc" --html
 ```
 
 ### Usage notes
