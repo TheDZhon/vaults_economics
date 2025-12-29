@@ -95,50 +95,54 @@ def parse_report_to_snapshots(
 def parse_lazy_oracle_vault_info(entry: Any) -> dict[str, Any]:
     """Parse LazyOracle batchVaultsInfo entry.
 
-    VaultInfo struct fields (14 total):
+    VaultInfo struct fields (14 total) from actual contract:
         0: vault (address)
         1: aggregatedBalance (uint256)
-        2: totalValue (uint256)
-        3: locked (uint256)
-        4: withdrawable (uint256)
-        5: obligationsShares (uint256)
+        2: inOutDelta (int256) - signed!
+        3: withdrawalCredentials (bytes32)
+        4: liabilityShares (uint256)
+        5: maxLiabilityShares (uint256)
         6: mintableStETH (uint256)
-        7: shareLimit (uint256)
-        8: reserveRatioBP (uint256)
-        9: forcedRebalanceThresholdBP (uint256)
-        10: rebalanceThresholdBP (uint256)
-        11: treasuryFeeBP (uint256)
-        12: unsettledLidoFees (uint256)
+        7: shareLimit (uint96)
+        8: reserveRatioBP (uint16)
+        9: forcedRebalanceThresholdBP (uint16)
+        10: infraFeeBP (uint16)
+        11: liquidityFeeBP (uint16)
+        12: reservationFeeBP (uint16)
         13: pendingDisconnect (bool)
     """
     if isinstance(entry, dict):
         return {
             "vault": entry.get("vault"),
             "aggregatedBalance": entry.get("aggregatedBalance"),
-            "totalValue": entry.get("totalValue"),
-            "locked": entry.get("locked"),
-            "withdrawable": entry.get("withdrawable"),
-            "obligationsShares": entry.get("obligationsShares"),
+            "inOutDelta": entry.get("inOutDelta"),
+            "withdrawalCredentials": entry.get("withdrawalCredentials"),
+            "liabilityShares": entry.get("liabilityShares"),
+            "maxLiabilityShares": entry.get("maxLiabilityShares"),
             "mintableStETH": entry.get("mintableStETH"),
             "shareLimit": entry.get("shareLimit"),
             "reserveRatioBP": entry.get("reserveRatioBP"),
             "forcedRebalanceThresholdBP": entry.get("forcedRebalanceThresholdBP"),
-            "unsettledLidoFees": entry.get("unsettledLidoFees"),
+            "infraFeeBP": entry.get("infraFeeBP"),
+            "liquidityFeeBP": entry.get("liquidityFeeBP"),
+            "reservationFeeBP": entry.get("reservationFeeBP"),
             "pendingDisconnect": entry.get("pendingDisconnect"),
         }
     # Tuple format (web3.py may decode as tuple)
     return {
         "vault": entry[0] if len(entry) > 0 else None,
         "aggregatedBalance": entry[1] if len(entry) > 1 else None,
-        "totalValue": entry[2] if len(entry) > 2 else None,
-        "locked": entry[3] if len(entry) > 3 else None,
-        "withdrawable": entry[4] if len(entry) > 4 else None,
-        "obligationsShares": entry[5] if len(entry) > 5 else None,
+        "inOutDelta": entry[2] if len(entry) > 2 else None,
+        "withdrawalCredentials": entry[3] if len(entry) > 3 else None,
+        "liabilityShares": entry[4] if len(entry) > 4 else None,
+        "maxLiabilityShares": entry[5] if len(entry) > 5 else None,
         "mintableStETH": entry[6] if len(entry) > 6 else None,
         "shareLimit": entry[7] if len(entry) > 7 else None,
         "reserveRatioBP": entry[8] if len(entry) > 8 else None,
         "forcedRebalanceThresholdBP": entry[9] if len(entry) > 9 else None,
-        "unsettledLidoFees": entry[12] if len(entry) > 12 else None,
+        "infraFeeBP": entry[10] if len(entry) > 10 else None,
+        "liquidityFeeBP": entry[11] if len(entry) > 11 else None,
+        "reservationFeeBP": entry[12] if len(entry) > 12 else None,
         "pendingDisconnect": entry[13] if len(entry) > 13 else None,
     }
 

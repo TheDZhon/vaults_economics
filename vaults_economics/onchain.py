@@ -56,8 +56,44 @@ def collect_onchain_metrics(
             continue
         vault_addr = w3.to_checksum_address(info["vault"])
 
-        # Most fields now come directly from batchVaultsInfo
-        # Only isVaultHealthy still needs a separate call
+        # LazyOracle provides: vault, aggregatedBalance, mintableStETH, shareLimit,
+        # reserveRatioBP, forcedRebalanceThresholdBP, pendingDisconnect
+        # VaultHub provides: totalValue, locked, withdrawableValue, unsettledLidoFees, isVaultHealthy
+
+        # Call VaultHub for fields not in LazyOracle
+        try:
+            total_value = vault_hub_contract.functions.totalValue(vault_addr).call(
+                block_identifier=block_identifier
+            )
+        except Exception as ex:  # pylint: disable=broad-exception-caught
+            print(f"⚠️  totalValue failed for {vault_addr}: {ex}", file=sys.stderr)
+            total_value = 0
+
+        try:
+            locked = vault_hub_contract.functions.locked(vault_addr).call(
+                block_identifier=block_identifier
+            )
+        except Exception as ex:  # pylint: disable=broad-exception-caught
+            print(f"⚠️  locked failed for {vault_addr}: {ex}", file=sys.stderr)
+            locked = 0
+
+        try:
+            withdrawable = vault_hub_contract.functions.withdrawableValue(vault_addr).call(
+                block_identifier=block_identifier
+            )
+        except Exception as ex:  # pylint: disable=broad-exception-caught
+            print(f"⚠️  withdrawableValue failed for {vault_addr}: {ex}", file=sys.stderr)
+            withdrawable = 0
+
+        try:
+            # obligations returns (sharesToBurn, feesToSettle) where feesToSettle is unsettled Lido fees
+            _, unsettled_fees = vault_hub_contract.functions.obligations(vault_addr).call(
+                block_identifier=block_identifier
+            )
+        except Exception as ex:  # pylint: disable=broad-exception-caught
+            print(f"⚠️  obligations failed for {vault_addr}: {ex}", file=sys.stderr)
+            unsettled_fees = 0
+
         try:
             is_healthy = vault_hub_contract.functions.isVaultHealthy(vault_addr).call(
                 block_identifier=block_identifier
@@ -74,11 +110,11 @@ def collect_onchain_metrics(
             share_limit=as_int(info["shareLimit"]),
             mintable_steth_wei=as_int(info["mintableStETH"]),
             pending_disconnect=bool(info["pendingDisconnect"]),
-            onchain_total_value_wei=as_int(info["totalValue"]),
-            locked_wei=as_int(info["locked"]),
-            withdrawable_wei=as_int(info["withdrawable"]),
-            obligations_shares=as_int(info["obligationsShares"]),
-            unsettled_lido_fees_wei=as_int(info["unsettledLidoFees"]),
+            onchain_total_value_wei=as_int(total_value),
+            locked_wei=as_int(locked),
+            withdrawable_wei=as_int(withdrawable),
+            obligations_shares=0,  # Not directly available; could derive from liabilityShares
+            unsettled_lido_fees_wei=as_int(unsettled_fees),
             is_healthy=bool(is_healthy),
         )
 

@@ -66,8 +66,20 @@ def format_wei_sci(value: int, *, sig: int = 3) -> str:
     return f"{sign}{mant}e{exp_i}"
 
 
+# type(uint256).max in Solidity - sentinel value for "infinity" or "not applicable"
+UINT256_MAX = 2**256 - 1
+# Threshold: values above 1e50 ETH are likely sentinel values
+SENTINEL_THRESHOLD_WEI = 10**68  # ~10^50 ETH
+
+
 def format_eth(value_wei: int, *, decimals: int = 9, approx: bool = False) -> str:
-    """Format wei value as ETH."""
+    """Format wei value as ETH.
+    
+    Values above a certain threshold (likely UINT256_MAX or similar sentinel values)
+    are displayed as "∞" to avoid layout-breaking huge numbers.
+    """
+    if value_wei >= SENTINEL_THRESHOLD_WEI:
+        return "∞ (N/A)"
     eth = Decimal(value_wei) / WEI_PER_ETH
     s = f"{eth:.{decimals}f}".rstrip("0").rstrip(".")
     prefix = "~" if approx else ""

@@ -116,20 +116,20 @@ LAZY_ORACLE_MIN_ABI: list[dict] = [
                 "name": "",
                 "type": "tuple[]",
                 "components": [
-                    {"name": "vault", "type": "address"},               # 0
-                    {"name": "aggregatedBalance", "type": "uint256"},   # 1
-                    {"name": "totalValue", "type": "uint256"},          # 2
-                    {"name": "locked", "type": "uint256"},              # 3
-                    {"name": "withdrawable", "type": "uint256"},        # 4
-                    {"name": "obligationsShares", "type": "uint256"},   # 5
-                    {"name": "mintableStETH", "type": "uint256"},       # 6
-                    {"name": "shareLimit", "type": "uint256"},          # 7
-                    {"name": "reserveRatioBP", "type": "uint256"},      # 8
-                    {"name": "forcedRebalanceThresholdBP", "type": "uint256"},  # 9
-                    {"name": "rebalanceThresholdBP", "type": "uint256"},        # 10
-                    {"name": "treasuryFeeBP", "type": "uint256"},       # 11
-                    {"name": "unsettledLidoFees", "type": "uint256"},   # 12
-                    {"name": "pendingDisconnect", "type": "bool"},      # 13
+                    {"name": "vault", "type": "address"},                   # 0
+                    {"name": "aggregatedBalance", "type": "uint256"},       # 1
+                    {"name": "inOutDelta", "type": "int256"},               # 2
+                    {"name": "withdrawalCredentials", "type": "bytes32"},   # 3
+                    {"name": "liabilityShares", "type": "uint256"},         # 4
+                    {"name": "maxLiabilityShares", "type": "uint256"},      # 5
+                    {"name": "mintableStETH", "type": "uint256"},           # 6
+                    {"name": "shareLimit", "type": "uint96"},               # 7
+                    {"name": "reserveRatioBP", "type": "uint16"},           # 8
+                    {"name": "forcedRebalanceThresholdBP", "type": "uint16"},  # 9
+                    {"name": "infraFeeBP", "type": "uint16"},               # 10
+                    {"name": "liquidityFeeBP", "type": "uint16"},           # 11
+                    {"name": "reservationFeeBP", "type": "uint16"},         # 12
+                    {"name": "pendingDisconnect", "type": "bool"},          # 13
                 ],
             }
         ],

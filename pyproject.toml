@@ -20,6 +20,8 @@ dev = [
 
 [project.scripts]
 vaults-economics-dtd = "vaults_economics:_entry_point"
+ve = "vaults_economics:_entry_point"
+vaults = "vaults_economics:_entry_point"
 
 [build-system]
 requires = ["hatchling"]

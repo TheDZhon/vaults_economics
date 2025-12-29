@@ -11,6 +11,12 @@ from tqdm import tqdm
 from vaults_economics.blockchain import collect_recent_report_submissions
 from vaults_economics.cache import clear_cache
 from vaults_economics.console import print_report_with_deltas
+from vaults_economics.analytics import (
+    calculate_protocol_analytics,
+    calculate_growth_metrics,
+    rank_vaults_by_performance,
+    format_analytics_summary,
+)
 from vaults_economics.constants import (
     ACCOUNTING_ORACLE_MIN_ABI,
     DEFAULT_BLOCKS_PER_DAY,
@@ -97,7 +103,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--blocks-per-day", type=int, default=DEFAULT_BLOCKS_PER_DAY, help="Approx blocks/day (default: 7200)."
     )
     p.add_argument(
-        "--log-chunk-size", type=int, default=20_000, help="Block chunk size for eth_getLogs (default: 20000)."
+        "--log-chunk-size", type=int, default=1_000, help="Block chunk size for eth_getLogs (default: 1000)."
     )
     p.add_argument("--timeout", type=int, default=30, help="HTTP timeout seconds (RPC/IPFS).")
     p.add_argument(
@@ -110,6 +116,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         type=int,
         default=0,
         help="Port for the HTML server (default: auto-select available port).",
+    )
+    p.add_argument(
+        "--analytics",
+        action="store_true",
+        help="Show strategic analytics summary (revenue, efficiency, risk metrics, vault rankings).",
     )
     p.add_argument(
         "--clear-cache",
@@ -313,6 +324,44 @@ def main(argv: list[str]) -> int:
 
     # Show screenshot-style summary for latest report + deltas vs previous/first + aggregates.
     print_report_with_deltas(submissions, snapshots, onchain_metrics_list, onchain_blocks)
+
+    # Strategic analytics
+    if args.analytics:
+        current = submissions[0]
+        cur_snap = snapshots[0]
+        onchain_cur = onchain_metrics_list[0] if onchain_metrics_list else None
+
+        analytics = calculate_protocol_analytics(cur_snap, onchain_cur, current.simulated_share_rate)
+        print(format_analytics_summary(analytics))
+
+        # Growth trends
+        growth = calculate_growth_metrics(submissions, snapshots)
+        if growth.get("has_trend_data"):
+            from decimal import Decimal
+            from vaults_economics.constants import WEI_PER_ETH
+
+            print("📈 GROWTH TRENDS")
+            print(f"   Period: {growth['period_days']} days ({growth['reports_count']} reports)")
+            tvl_change_sign = "+" if growth["tvl_change_wei"] >= 0 else ""
+            print(f"   TVL: {Decimal(growth['tvl_first_wei']) / WEI_PER_ETH:.2f} → {Decimal(growth['tvl_latest_wei']) / WEI_PER_ETH:.2f} ETH ({tvl_change_sign}{growth['tvl_growth_pct']:.1f}%)")
+            print(f"   Vaults: {growth['vaults_first']} → {growth['vaults_latest']} ({growth['vaults_change']:+d})")
+            fee_sign = "+" if growth["fee_change_wei"] >= 0 else ""
+            print(f"   Daily Fee: {fee_sign}{growth['fee_growth_pct']:.1f}% change")
+            print(f"   Total Fees (period): {Decimal(growth['total_fees_period_wei']) / WEI_PER_ETH:.4f} ETH")
+            print("")
+
+        # Top performers
+        rankings = rank_vaults_by_performance(cur_snap, onchain_cur, current.simulated_share_rate)
+        if rankings:
+            print("🏆 TOP PERFORMING VAULTS")
+            print("   " + "-" * 60)
+            for r in rankings[:5]:
+                from decimal import Decimal
+                from vaults_economics.constants import WEI_PER_ETH
+                fee_eth = Decimal(r.daily_fee_wei) / WEI_PER_ETH
+                print(f"   #{r.rank} {r.vault[:10]}...{r.vault[-6:]}")
+                print(f"      Score: {r.score:.3f} | Fee: {fee_eth:.6f} ETH/day | Util: {r.utilization*100:.1f}% | Risk: {r.risk_tier}")
+            print("")
 
     return 0
 
