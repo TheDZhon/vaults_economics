@@ -1,0 +1,35 @@
+repos:
+  - repo: local
+    hooks:
+      - id: mdformat-readme
+        name: mdformat README.md
+        entry: uv run mdformat README.md
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      - id: ruff-format-vaults-economics-dtd
+        name: ruff format (vaults_economics_dtd.py)
+        entry: uv run ruff format vaults_economics/vaults_economics_dtd.py
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      - id: ruff-check-vaults-economics-dtd
+        name: ruff check (vaults_economics_dtd.py)
+        entry: uv run ruff check --fix vaults_economics/vaults_economics_dtd.py
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      - id: pytest
+        name: pytest
+        entry: uv run pytest -q
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
