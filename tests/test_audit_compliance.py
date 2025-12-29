@@ -1,11 +1,10 @@
 import json
 from pathlib import Path
 import pytest
-from vaults_economics.vaults_economics_dtd import (
-    VaultSnapshot,
-    _parse_report_to_snapshots,
-    _as_int,
-)
+from vaults_economics.models import VaultSnapshot
+from vaults_economics.parsing import parse_report_to_snapshots
+from vaults_economics.formatters import as_int
+
 
 def test_parse_report_strict_source_of_truth_compliance():
     """
@@ -52,7 +51,7 @@ def test_parse_report_strict_source_of_truth_compliance():
     }
 
     # 2. Parse
-    snapshots = _parse_report_to_snapshots(source_of_truth_json)
+    snapshots = parse_report_to_snapshots(source_of_truth_json)
     
     # 3. Verify
     assert "0xvaultaddress1" in snapshots
@@ -74,10 +73,10 @@ def test_parse_report_strict_source_of_truth_compliance():
     assert s.reservation_fee_wei == 0
 
 def test_as_int_robustness():
-    """Challenge _as_int with various types found in wild JSONs."""
-    assert _as_int("123") == 123
-    assert _as_int("0x10") == 16
-    assert _as_int(123) == 123
-    assert _as_int(None) == 0
-    assert _as_int("-500") == -500  # Important for inOutDelta
-    assert _as_int("  10  ") == 10
+    """Challenge as_int with various types found in wild JSONs."""
+    assert as_int("123") == 123
+    assert as_int("0x10") == 16
+    assert as_int(123) == 123
+    assert as_int(None) == 0
+    assert as_int("-500") == -500  # Important for inOutDelta
+    assert as_int("  10  ") == 10
