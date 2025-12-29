@@ -287,7 +287,6 @@ def print_aggregates_section(
     current: ReportSubmission,
     cur_snap: dict[str, VaultSnapshot],
     prev: tuple[ReportSubmission, dict[str, VaultSnapshot]] | None,
-    first: tuple[ReportSubmission, dict[str, VaultSnapshot]] | None,
     onchain_cur: dict[str, OnchainVaultMetrics] | None = None,
     onchain_block: int | str | None = None,
 ) -> None:
@@ -366,26 +365,21 @@ def print_aggregates_section(
             util_text = f"{(utilization_total * Decimal(100)):.2f}%" if utilization_total is not None else "n/a"
             print(f"   • Utilization Ratio: {util_text}")
 
-    def _print_agg_delta(label: str, base_sub: ReportSubmission, base_snap: dict[str, VaultSnapshot]) -> None:
-        base_agg = compute_aggregates(base_snap)
-        print(f"\n📈 Aggregates change {label}:")
-        print(
-            f"   💰 Total Value (reported): {format_eth(base_agg.total_value_wei, decimals=2, approx=True)} → {format_eth(cur_agg.total_value_wei, decimals=2, approx=True)}"
-        )
-        print(
-            f"   🔁 Net deposits (inOutDelta): {format_eth(base_agg.in_out_delta_wei, decimals=6)} → {format_eth(cur_agg.in_out_delta_wei, decimals=6)}"
-        )
-        print(
-            f"   💸 Lido Fees (cumulative): {format_wei_sci(base_agg.cumulative_lido_fees_wei)} → {format_wei_sci(cur_agg.cumulative_lido_fees_wei)} wei"
-        )
-        print(
-            f"   📊 stETH Liability (shares): {format_shares(base_agg.liability_shares)} → {format_shares(cur_agg.liability_shares)}"
-        )
-
     if prev is not None:
-        _print_agg_delta("since last report", prev[0], prev[1])
-    if first is not None:
-        _print_agg_delta("since first report", first[0], first[1])
+        prev_agg = compute_aggregates(prev[1])
+        print("\n📈 Aggregates change since last report:")
+        print(
+            f"   💰 Total Value (reported): {format_eth(prev_agg.total_value_wei, decimals=2, approx=True)} → {format_eth(cur_agg.total_value_wei, decimals=2, approx=True)}"
+        )
+        print(
+            f"   🔁 Net deposits (inOutDelta): {format_eth(prev_agg.in_out_delta_wei, decimals=6)} → {format_eth(cur_agg.in_out_delta_wei, decimals=6)}"
+        )
+        print(
+            f"   💸 Lido Fees (cumulative): {format_wei_sci(prev_agg.cumulative_lido_fees_wei)} → {format_wei_sci(cur_agg.cumulative_lido_fees_wei)} wei"
+        )
+        print(
+            f"   📊 stETH Liability (shares): {format_shares(prev_agg.liability_shares)} → {format_shares(cur_agg.liability_shares)}"
+        )
 
 
 def print_report_with_deltas(
@@ -400,7 +394,6 @@ def print_report_with_deltas(
     cur_onchain = onchain_metrics[0] if onchain_metrics else None
     cur_block = onchain_blocks[0] if onchain_blocks else None
     prev = (submissions[1], snapshots[1]) if len(submissions) > 1 else None
-    first = (submissions[-1], snapshots[-1]) if len(submissions) > 1 else None
 
     print_current_report(current, cur_snap, cur_onchain, onchain_block=cur_block)
 
@@ -413,29 +406,10 @@ def print_report_with_deltas(
             base_snap=prev[1],
         )
 
-    if first is not None:
-        # Avoid duplicating the previous-report comparison when only 2 reports are available.
-        if len(submissions) > 2:
-            print_changes_section(
-                title="📈 CHANGES SINCE FIRST REPORT",
-                current=current,
-                cur_snap=cur_snap,
-                baseline=first[0],
-                base_snap=first[1],
-            )
-        elif prev is not None:
-            print("\n" + "=" * 70)
-            print("📈 CHANGES SINCE FIRST REPORT")
-            print(
-                "   ℹ️ Only 2 reports available — first report equals previous report; see 'CHANGES SINCE LAST REPORT' above."
-            )
-            print("=" * 70)
-
     print_aggregates_section(
         current=current,
         cur_snap=cur_snap,
         prev=prev,
-        first=first if len(submissions) > 2 else None,
         onchain_cur=cur_onchain,
         onchain_block=cur_block,
     )

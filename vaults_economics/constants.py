@@ -200,9 +200,6 @@ VAULT_HUB_MIN_ABI: list[dict] = [
     },
 ]
 
-# Approx blocks/day on mainnet.
-DEFAULT_BLOCKS_PER_DAY = 7200
-
 # Used only when neither --rpc-url nor ETH_RPC_URL are provided.
 # Keep this list short and comprised of generally-available public endpoints.
 DEFAULT_PUBLIC_ETH_RPC_URLS = (

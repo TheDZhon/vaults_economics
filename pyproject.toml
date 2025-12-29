@@ -26,6 +26,8 @@ dev = [
 vaults-economics-dtd = "vaults_economics:_entry_point"
 ve = "vaults_economics:_entry_point"
 vaults = "vaults_economics:_entry_point"
+vaults-clear-cache = "vaults_economics:_clear_cache_entry_point"
+cc = "vaults_economics:_clear_cache_entry_point"
 
 [build-system]
 requires = ["hatchling"]

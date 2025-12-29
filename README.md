@@ -21,10 +21,9 @@ It can also generate an interactive (dark-themed) **HTML report** and optionally
 ### Highlights
 
 - **Per-vault economics**: Total Value, stETH Liability (shares), Lido fee components, annualized projections.
-- **Deltas**:
-  - `--reports 2` → since last report
-  - `--reports >= 3` → since first report (plus aggregate deltas)
+- **Deltas**: changes since last report.
 - **Aggregates footer** across all vaults (totals + deltas).
+- **Analytics** (always enabled): adoption metrics, revenue, capital efficiency, risk metrics, and vault rankings.
 - **On-chain metrics (optional)**: locked, withdrawable, minting capacity, utilization, health factor, pending disconnect, etc.
 - **HTML report (optional)**: dashboard + vault cards + mobile-friendly layout.
 - **Caching** for IPFS, logs, txs, blocks, metrics.
@@ -48,48 +47,36 @@ Install:
 uv sync
 ```
 
-Run (latest report only):
+Run (fetches all reports from genesis, cached for fast subsequent runs):
 
 ```bash
-uv run vaults-economics-dtd --reports 1
+uv run ve
 ```
 
 Run with your own RPC:
 
 ```bash
 export ETH_RPC_URL="https://your-mainnet-rpc"
-uv run vaults-economics-dtd --rpc-url "$ETH_RPC_URL" --reports 7
-```
-
-Run as a module:
-
-```bash
-uv run python -m vaults_economics.vaults_economics_dtd --reports 7
+uv run ve --rpc-url "$ETH_RPC_URL"
 ```
 
 HTML report (opens browser):
 
 ```bash
-uv run vaults-economics-dtd --reports 1 --html
+uv run ve --html
 ```
 
 ### Usage notes
 
 - **Report discovery**: finds reports by scanning `ProcessingStarted(uint256,bytes32)` logs and decoding the corresponding tx input.
 - **Contract resolution**: resolves AccountingOracle/LazyOracle/VaultHub/Lido dynamically via **LidoLocator** (no hardcoded addresses).
-- **Historical on-chain reads**: `--onchain-block report` (default) reads at each report tx block and typically requires an archive-capable RPC.
-- **Non-archive RPCs**: use `--onchain-block latest`.
+- **Historical on-chain reads**: reads on-chain metrics at each report's tx block (requires archive-capable RPC).
 - **Default RPCs**: if you omit `--rpc-url` and `ETH_RPC_URL`, a small list of public endpoints is tried.
 
 ### Handy CLI flags (cheat sheet)
 
-- **`--reports N`**: how many latest reports to analyze (1 = latest only).
-- **`--days N`**: how far back to scan for reports.
-- **`--no-onchain`**: skip LazyOracle/VaultHub metrics (fewer RPC calls).
-- **`--onchain-block report|latest|<block>`**: choose block for on-chain reads.
-- **`--html` / `--html-port`**: generate and serve HTML report.
-- **`--analytics`**: show analytics summary + rankings.
-- **`--no-cache` / `--clear-cache`**: control local cache.
+- **`--html`**: generate and serve HTML report in browser.
+- **`--no-cache`**: disable caching for this run.
 - **`--locator ADDRESS`**: override LidoLocator (testnets).
 
 ### Caching
@@ -109,13 +96,13 @@ Cache location:
 Clear cache:
 
 ```bash
-uv run vaults-economics-dtd --clear-cache
+uv run cc
 ```
 
 Disable cache for a run:
 
 ```bash
-uv run vaults-economics-dtd --no-cache --reports 7
+uv run ve --no-cache
 ```
 
 ### Vault report field semantics (important)

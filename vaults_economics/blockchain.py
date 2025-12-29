@@ -123,26 +123,20 @@ def collect_recent_report_submissions(
     contract,
     oracle_address: str,
     *,
-    want_reports: int | None,
-    days: int,
-    blocks_per_day: int,
-    log_chunk_size: int,
+    log_chunk_size: int = 1000,
     use_cache: bool = True,
 ) -> list[ReportSubmission]:
-    """Collect recent report submissions. If want_reports is None, collect all in the scanned range."""
+    """Collect all report submissions from genesis (FIRST_VAULT_REPORT_BLOCK) to latest block."""
     topic0_sig = topic0(w3, "ProcessingStarted(uint256,bytes32)")
 
     latest_block = int(w3.eth.block_number)
-    window = max(1, int(days) * int(blocks_per_day))
 
     collected: list[ReportSubmission] = []
     seen_ref_slots: set[int] = set()
 
-    # Never scan below the first vault report block - no reports exist before it
-    earliest_block = FIRST_VAULT_REPORT_BLOCK
-
+    # Scan from the first vault report block to latest
+    scan_start = FIRST_VAULT_REPORT_BLOCK
     scan_end = latest_block
-    scan_start = max(earliest_block, scan_end - window + 1)
     ranges = list(iter_block_ranges(scan_start, scan_end, log_chunk_size))
     oracle_addr = normalize_hex_str(oracle_address)
 
@@ -196,8 +190,5 @@ def collect_recent_report_submissions(
                 )
             )
             pbar.set_postfix(found=len(collected))
-
-            if want_reports is not None and len(collected) >= want_reports:
-                break
 
     return collected

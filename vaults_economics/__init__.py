@@ -10,3 +10,11 @@ def _entry_point():
     from vaults_economics.vaults_economics_dtd import main
 
     raise SystemExit(main(sys.argv[1:]))
+
+
+def _clear_cache_entry_point():
+    """Entry point for clearing the cache."""
+    from vaults_economics.cache import clear_cache
+
+    clear_cache()
+    raise SystemExit(0)

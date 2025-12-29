@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from vaults_economics.cli import default_rpc_urls, resolve_onchain_block
+from vaults_economics.cli import default_rpc_urls
 from vaults_economics.console import print_changes_section, print_report_with_deltas
 from vaults_economics.constants import (
     ACCOUNTING_ORACLE_MIN_ABI,
@@ -238,13 +238,6 @@ def test_default_rpc_urls_order_and_dedup():
     assert default_rpc_urls(None) == list(DEFAULT_PUBLIC_ETH_RPC_URLS)
 
 
-def test_resolve_onchain_block():
-    assert resolve_onchain_block("latest", 100) == "latest"
-    assert resolve_onchain_block("report", 123) == 123
-    assert resolve_onchain_block("456", 1) == 456
-    assert resolve_onchain_block("0x10", 1) == 16
-
-
 def test_locked_value_wei():
     share_rate = 10**27
     one_eth = 10**18
@@ -337,7 +330,8 @@ def test_print_changes_section_marks_new_vault_and_omits_unchanged(capsys):
     assert "unchanged" in out.lower()
 
 
-def test_print_report_with_deltas_includes_first_report_section_when_three_reports(capsys):
+def test_print_report_with_deltas_with_multiple_reports_shows_last_only(capsys):
+    """When multiple reports are provided, only show changes since last report (not first)."""
     sub0 = ReportSubmission(
         ref_slot=3,
         block_number=3,
@@ -372,9 +366,13 @@ def test_print_report_with_deltas_includes_first_report_section_when_three_repor
 
     print_report_with_deltas([sub0, sub1, sub2], [s0, s1, s2])
     out = capsys.readouterr().out
-    assert "📈 CHANGES SINCE FIRST REPORT" in out
+    # Should show changes since last report
+    assert "📈 CHANGES SINCE LAST REPORT" in out
     assert "🧾 stVaults AGGREGATES" in out
-    assert "Aggregates change since first report" in out
+    assert "Aggregates change since last report" in out
+    # Should NOT show first-report comparison (removed feature)
+    assert "📈 CHANGES SINCE FIRST REPORT" not in out
+    assert "since first report" not in out
 
 
 @pytest.mark.parametrize(
