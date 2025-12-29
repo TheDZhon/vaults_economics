@@ -113,7 +113,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument(
         "--analytics",
         action="store_true",
-        help="Show strategic analytics summary (revenue, efficiency, risk metrics, vault rankings).",
+        help="Show analytics summary (revenue, efficiency, risk metrics, vault rankings).",
     )
     p.add_argument(
         "--clear-cache",
@@ -321,7 +321,7 @@ def main(argv: list[str]) -> int:
     # Show screenshot-style summary for latest report + deltas vs previous/first + aggregates.
     print_report_with_deltas(submissions, snapshots, onchain_metrics_list, onchain_blocks)
 
-    # Strategic analytics
+    # Analytics
     if args.analytics:
         # Lazy import: analytics are optional and shouldn't affect startup for the default path.
         from vaults_economics.analytics import (

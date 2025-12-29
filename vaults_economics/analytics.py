@@ -1,4 +1,4 @@
-"""Strategic analytics for stVaults economics.
+"""Analytics for stVaults economics.
 
 This module provides metrics and analysis for scaling stVaults development:
 - Growth & Adoption metrics
@@ -418,7 +418,7 @@ def format_analytics_summary(analytics: ProtocolAnalytics) -> str:
     lines = [
         "",
         "=" * 70,
-        "📊 STRATEGIC ANALYTICS SUMMARY",
+        "📊 ANALYTICS SUMMARY",
         "=" * 70,
         "",
         "🏦 ADOPTION METRICS",

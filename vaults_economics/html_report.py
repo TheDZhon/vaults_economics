@@ -602,7 +602,7 @@ def generate_analytics_section(
     rankings: list,
     simulated_share_rate: int,
 ) -> str:
-    """Generate the strategic analytics section HTML."""
+    """Generate the analytics section HTML."""
     from decimal import Decimal
     from vaults_economics.constants import WEI_PER_ETH
 
@@ -693,7 +693,7 @@ def generate_analytics_section(
 
     return f"""
     <section class="analytics-section">
-        <h2>🎯 Strategic Analytics</h2>
+        <h2>🎯 Analytics</h2>
         <div class="analytics-grid">
             <div class="analytics-card">
                 <h3><span class="emoji">💰</span> Revenue Metrics</h3>
@@ -812,7 +812,7 @@ def generate_html_report(
     </header>
     """)
 
-    # Strategic Analytics Section
+    # Analytics Section
     protocol_analytics = calculate_protocol_analytics(cur_snap, onchain_cur, current.simulated_share_rate)
     growth_metrics = calculate_growth_metrics(submissions, snapshots)
     vault_rankings = rank_vaults_by_performance(cur_snap, onchain_cur, current.simulated_share_rate)
