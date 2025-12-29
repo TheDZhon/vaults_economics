@@ -175,7 +175,4 @@ def decode_submit_report_data_tx(contract, tx_input: str) -> tuple[int, str, str
     if not cid:
         raise ValueError("Empty vaultsDataTreeCid decoded from tx input")
 
-    root_hex = root.hex() if hasattr(root, "hex") else str(root)
-    if not root_hex.startswith("0x"):
-        root_hex = f"0x{root_hex}"
-    return ref_slot, root_hex, cid, simulated_share_rate
+    return ref_slot, normalize_hex_str(root), cid, simulated_share_rate

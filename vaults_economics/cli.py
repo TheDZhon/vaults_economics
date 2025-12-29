@@ -11,12 +11,6 @@ from tqdm import tqdm
 from vaults_economics.blockchain import collect_recent_report_submissions
 from vaults_economics.cache import clear_cache
 from vaults_economics.console import print_report_with_deltas
-from vaults_economics.analytics import (
-    calculate_protocol_analytics,
-    calculate_growth_metrics,
-    rank_vaults_by_performance,
-    format_analytics_summary,
-)
 from vaults_economics.constants import (
     ACCOUNTING_ORACLE_MIN_ABI,
     DEFAULT_BLOCKS_PER_DAY,
@@ -27,7 +21,6 @@ from vaults_economics.constants import (
     VAULT_HUB_MIN_ABI,
 )
 from vaults_economics.contracts import resolve_lido_contracts
-from vaults_economics.html_report import generate_html_report, serve_html_and_open_browser
 from vaults_economics.ipfs import fetch_ipfs_bytes
 from vaults_economics.models import OnchainVaultMetrics, VaultSnapshot
 from vaults_economics.onchain import collect_onchain_metrics
@@ -308,6 +301,9 @@ def main(argv: list[str]) -> int:
 
     # HTML mode: generate and serve
     if args.html:
+        # Lazy import: HTML reporting is an optional, heavier feature.
+        from vaults_economics.html_report import generate_html_report, serve_html_and_open_browser
+
         html_content = generate_html_report(submissions, snapshots, onchain_metrics_list, onchain_blocks)
         serve_html_and_open_browser(html_content, port=args.html_port)
         return 0
@@ -327,6 +323,14 @@ def main(argv: list[str]) -> int:
 
     # Strategic analytics
     if args.analytics:
+        # Lazy import: analytics are optional and shouldn't affect startup for the default path.
+        from vaults_economics.analytics import (
+            calculate_growth_metrics,
+            calculate_protocol_analytics,
+            format_analytics_summary,
+            rank_vaults_by_performance,
+        )
+
         current = submissions[0]
         cur_snap = snapshots[0]
         onchain_cur = onchain_metrics_list[0] if onchain_metrics_list else None

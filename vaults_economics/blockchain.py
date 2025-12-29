@@ -7,6 +7,7 @@ from tqdm import tqdm
 
 from vaults_economics.cache import cache_key, get_cached, set_cached
 from vaults_economics.constants import FIRST_VAULT_REPORT_BLOCK
+from vaults_economics.formatters import as_int, normalize_hex_str
 from vaults_economics.models import ReportSubmission
 from vaults_economics.parsing import decode_submit_report_data_tx
 
@@ -18,10 +19,7 @@ def topic0(w3: "Web3", signature: str) -> str:
     """Compute topic0 (event signature hash) for a function/event signature."""
     from web3 import Web3  # pylint: disable=import-outside-toplevel
 
-    result = Web3.keccak(text=signature)
-    hex_str = result.hex() if hasattr(result, "hex") else str(result)
-    # Ensure 0x prefix is present
-    return hex_str if hex_str.startswith("0x") else f"0x{hex_str}"
+    return normalize_hex_str(Web3.keccak(text=signature))
 
 
 def iter_block_ranges(start: int, end: int, chunk_size: int) -> Iterable[tuple[int, int]]:
@@ -76,7 +74,7 @@ def get_cached_transaction(w3: "Web3", tx_hash: str, use_cache: bool = True) -> 
     tx_dict = dict(tx)
     for key_name, value in tx_dict.items():
         if hasattr(value, "hex"):
-            tx_dict[key_name] = value.hex()
+            tx_dict[key_name] = normalize_hex_str(value)
     if use_cache:
         set_cached(key, tx_dict)
     return tx_dict
@@ -95,11 +93,11 @@ def get_cached_block(w3: "Web3", block_identifier: int | str, use_cache: bool = 
     block_dict = dict(block)
     for key_name, value in block_dict.items():
         if hasattr(value, "hex"):
-            block_dict[key_name] = value.hex()
+            block_dict[key_name] = normalize_hex_str(value)
         elif isinstance(value, list):
             # Handle list of transactions
             block_dict[key_name] = [
-                (tx.hex() if hasattr(tx, "hex") else str(tx)) if not isinstance(tx, dict) else tx
+                (normalize_hex_str(tx) if hasattr(tx, "hex") else str(tx)) if not isinstance(tx, dict) else tx
                 for tx in value
             ]
     if use_cache:
@@ -117,10 +115,7 @@ def get_latest_report_from_lazy_oracle(
     Returns: (timestamp, ref_slot, tree_root_hex, report_cid)
     """
     timestamp, ref_slot, tree_root, report_cid = lazy_oracle_contract.functions.latestReportData().call()
-    tree_root_hex = tree_root.hex() if hasattr(tree_root, "hex") else str(tree_root)
-    if not tree_root_hex.startswith("0x"):
-        tree_root_hex = f"0x{tree_root_hex}"
-    return int(timestamp), int(ref_slot), tree_root_hex, str(report_cid)
+    return int(timestamp), int(ref_slot), normalize_hex_str(tree_root), str(report_cid)
 
 
 def collect_recent_report_submissions(
@@ -143,84 +138,66 @@ def collect_recent_report_submissions(
     collected: list[ReportSubmission] = []
     seen_ref_slots: set[int] = set()
 
-    scan_end = latest_block
     # Never scan below the first vault report block - no reports exist before it
     earliest_block = FIRST_VAULT_REPORT_BLOCK
 
-    # Calculate total blocks to scan for progress bar
-    total_blocks = min(scan_end - earliest_block + 1, window)
-    block_ranges = list(iter_block_ranges(max(earliest_block, scan_end - window + 1), scan_end, log_chunk_size))
+    scan_end = latest_block
+    scan_start = max(earliest_block, scan_end - window + 1)
+    ranges = list(iter_block_ranges(scan_start, scan_end, log_chunk_size))
+    oracle_addr = normalize_hex_str(oracle_address)
 
-    with tqdm(total=len(block_ranges), desc="🔍 Scanning blockchain logs", unit="chunk", file=sys.stderr) as pbar:
-        while scan_end >= earliest_block and (want_reports is None or len(collected) < want_reports):
-            scan_start = max(earliest_block, scan_end - window + 1)
+    with tqdm(total=len(ranges), desc="🔍 Scanning blockchain logs", unit="chunk", file=sys.stderr) as pbar:
+        logs: list[dict[str, Any]] = []
+        for a, b in ranges:
+            # Use provider.make_request to completely bypass web3.py middleware
+            # Some RPC providers (like drpc.live) require proper hex formatting.
+            filter_params = {
+                "address": oracle_addr,
+                "fromBlock": hex(a),
+                "toBlock": hex(b),
+                "topics": [topic0_sig],
+            }
+            logs.extend(get_cached_logs(w3, filter_params, use_cache=use_cache))
+            pbar.update(1)
 
-            logs: list[dict[str, Any]] = []
-            for a, b in iter_block_ranges(scan_start, scan_end, log_chunk_size):
-                # Use provider.make_request to completely bypass web3.py middleware
-                # Some RPC providers (like drpc.live) require proper hex formatting
-                # Ensure oracle_address has 0x prefix
-                addr = oracle_address if oracle_address.startswith("0x") else f"0x{oracle_address}"
-                filter_params = {
-                    "address": addr,
-                    "fromBlock": hex(a),
-                    "toBlock": hex(b),
-                    "topics": [topic0_sig],
-                }
-                logs.extend(get_cached_logs(w3, filter_params, use_cache=use_cache))
-                pbar.update(1)
+        # Raw JSON-RPC response has hex strings; normalize for sorting
+        logs.sort(
+            key=lambda x: (
+                as_int(x["blockNumber"]),
+                as_int(x["transactionIndex"]),
+                as_int(x["logIndex"]),
+            )
+        )
 
-            # Raw JSON-RPC response has hex strings; convert for sorting
-            def _hex_to_int(val: Any) -> int:
-                if isinstance(val, int):
-                    return val
-                if isinstance(val, str):
-                    return int(val, 16) if val.startswith("0x") else int(val)
-                return int(val)
+        # Work backwards to get the latest reports first.
+        pbar.set_description(f"🔍 Processing {len(logs)} logs")
+        for log in reversed(logs):
+            tx_hash_hex = normalize_hex_str(log["transactionHash"])
+            tx = get_cached_transaction(w3, tx_hash_hex, use_cache=use_cache)
+            try:
+                ref_slot, root_hex, cid, simulated_share_rate = decode_submit_report_data_tx(contract, tx["input"])
+            except Exception:  # pylint: disable=broad-exception-caught
+                continue
 
-            logs.sort(
-                key=lambda x: (
-                    _hex_to_int(x["blockNumber"]),
-                    _hex_to_int(x["transactionIndex"]),
-                    _hex_to_int(x["logIndex"]),
+            if ref_slot in seen_ref_slots:
+                continue
+            seen_ref_slots.add(ref_slot)
+
+            block = get_cached_block(w3, int(tx["blockNumber"]), use_cache=use_cache)
+            collected.append(
+                ReportSubmission(
+                    ref_slot=ref_slot,
+                    block_number=int(tx["blockNumber"]),
+                    block_timestamp=int(block["timestamp"]),
+                    tx_hash=tx_hash_hex,
+                    vaults_tree_root=root_hex,
+                    vaults_tree_cid=cid,
+                    simulated_share_rate=simulated_share_rate,
                 )
             )
+            pbar.set_postfix(found=len(collected))
 
-            # Work backwards to get the latest reports first.
-            pbar.set_description(f"🔍 Processing {len(logs)} logs")
-            for log in reversed(logs):
-                # Handle both raw hex string and HexBytes from web3.py
-                tx_hash = log["transactionHash"]
-                tx_hash_hex = tx_hash if isinstance(tx_hash, str) else tx_hash.hex()
-                if not tx_hash_hex.startswith("0x"):
-                    tx_hash_hex = f"0x{tx_hash_hex}"
-                tx = get_cached_transaction(w3, tx_hash_hex, use_cache=use_cache)
-                try:
-                    ref_slot, root_hex, cid, simulated_share_rate = decode_submit_report_data_tx(contract, tx["input"])
-                except Exception:  # pylint: disable=broad-exception-caught
-                    continue
-
-                if ref_slot in seen_ref_slots:
-                    continue
-                seen_ref_slots.add(ref_slot)
-
-                block = get_cached_block(w3, int(tx["blockNumber"]), use_cache=use_cache)
-                collected.append(
-                    ReportSubmission(
-                        ref_slot=ref_slot,
-                        block_number=int(tx["blockNumber"]),
-                        block_timestamp=int(block["timestamp"]),
-                        tx_hash=tx_hash_hex,
-                        vaults_tree_root=root_hex,
-                        vaults_tree_cid=cid,
-                        simulated_share_rate=simulated_share_rate,
-                    )
-                )
-                pbar.set_postfix(found=len(collected))
-
-                if want_reports is not None and len(collected) >= want_reports:
-                    break
-
-            scan_end = scan_start - 1
+            if want_reports is not None and len(collected) >= want_reports:
+                break
 
     return collected
