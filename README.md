@@ -11,8 +11,6 @@ the `vaultsDataTreeCid` IPFS CID, downloads the Merkle-tree JSON, and prints a v
 
 It can also generate an interactive (dark-themed) **HTML report** and optionally fetch **on-chain metrics** from LazyOracle/VaultHub.
 
-This folder is **fully standalone**: it does not import code from `source_of_truth/`.
-
 ### WIP / Disclaimer
 
 - **Work in progress**: this project is built for ad-hoc runs and may change without notice.
@@ -164,4 +162,3 @@ uv run pre-commit install
 ### License
 
 - **This tool**: MIT — see `LICENSE`.
-- **Vendored upstream code in `source_of_truth/`**: governed by its own license files inside that directory (multiple licenses may apply).

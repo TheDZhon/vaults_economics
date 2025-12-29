@@ -2,16 +2,16 @@ from vaults_economics.formatters import as_int
 from vaults_economics.parsing import parse_report_to_snapshots
 
 
-def test_parse_report_strict_source_of_truth_compliance():
+def test_parse_report_strict_compliance():
     """
     Validates parsing against a JSON structure that strictly mimics
-    source_of_truth/lido-oracle/src/modules/accounting/types.py conventions.
+    lido-oracle accounting types conventions.
     """
 
     # 1. Simulate a JSON payload as produced by StandardMerkleTree + lido-oracle ExtraData
     # Structure based on StakingVaultIpfsReport in types.py
 
-    source_of_truth_json = {
+    report_json = {
         "format": "standard-v1",
         "tree": ["0x..."],
         "values": [
@@ -47,7 +47,7 @@ def test_parse_report_strict_source_of_truth_compliance():
     }
 
     # 2. Parse
-    snapshots = parse_report_to_snapshots(source_of_truth_json)
+    snapshots = parse_report_to_snapshots(report_json)
 
     # 3. Verify
     assert "0xvaultaddress1" in snapshots

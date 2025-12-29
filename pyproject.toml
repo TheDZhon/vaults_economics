@@ -35,10 +35,7 @@ build-backend = "hatchling.build"
 packages = ["vaults_economics"]
 
 [tool.hatch.build.targets.sdist]
-# Keep sdists small and standalone (this repo contains large vendored code under `source_of_truth/`).
-exclude = [
-    "source_of_truth/**",
-]
+exclude = []
 
 [tool.ruff]
 target-version = "py310"
