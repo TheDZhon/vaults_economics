@@ -1,0 +1,79 @@
+{
+  "expected_snapshots": {
+    "0x576bbda8b747d39bf16a2723ac6bb6bb3582ddf8": {
+      "infra_fee_wei": 1542214108555,
+      "liabilities_shares": 817712844167525442,
+      "liquidity_fee_wei": 5012520076401,
+      "max_liabilities_shares": 817712844167525442,
+      "net_inflow_wei": 2000000000000000000,
+      "prev_fee_wei": 10304593516405,
+      "reservation_fee_wei": 0,
+      "slashing_reserve_wei": 0,
+      "total_fees_wei": 16859327701361,
+      "tvl_wei": 2000000000000000000,
+      "vault": "0x576BBdA8b747d39BF16a2723AC6bB6BB3582dDF8"
+    },
+    "0x62e0d92cf7b8752b5292b9bcbbace4cfa1633428": {
+      "infra_fee_wei": 1542215298480,
+      "liabilities_shares": 0,
+      "liquidity_fee_wei": 0,
+      "max_liabilities_shares": 0,
+      "net_inflow_wei": 2000001543138203792,
+      "prev_fee_wei": 30630187305172,
+      "reservation_fee_wei": 0,
+      "slashing_reserve_wei": 0,
+      "total_fees_wei": 32172402603652,
+      "tvl_wei": 2000001543138203792,
+      "vault": "0x62e0D92cf7B8752b5292B9BCbbacE4cFa1633428"
+    }
+  },
+  "ipfs_url": "https://ipfs.io/ipfs/QmcRCesUbsVnrLadmqVQQxKBkkBKTfDAgmPU6BPdSRnUyY",
+  "report_sample": {
+    "extraValues": {
+      "0x576bbda8b747d39bf16a2723ac6bb6bb3582ddf8": {
+        "inOutDelta": "2000000000000000000",
+        "infraFee": "1542214108555",
+        "liquidityFee": "5012520076401",
+        "prevFee": "10304593516405",
+        "reservationFee": "0"
+      },
+      "0x62e0d92cf7b8752b5292b9bcbbace4cfa1633428": {
+        "inOutDelta": "2000001543138203792",
+        "infraFee": "1542215298480",
+        "liquidityFee": "0",
+        "prevFee": "30630187305172",
+        "reservationFee": "0"
+      }
+    },
+    "values": [
+      {
+        "treeIndex": 2,
+        "value": [
+          "0x62e0D92cf7B8752b5292B9BCbbacE4cFa1633428",
+          "2000001543138203792",
+          "32172402603652",
+          "0",
+          "0",
+          "0"
+        ]
+      },
+      {
+        "treeIndex": 1,
+        "value": [
+          "0x576BBdA8b747d39BF16a2723AC6bB6BB3582dDF8",
+          "2000000000000000000",
+          "16859327701361",
+          "817712844167525442",
+          "817712844167525442",
+          "0"
+        ]
+      }
+    ]
+  },
+  "selected_vault_keys": [
+    "0x62e0d92cf7b8752b5292b9bcbbace4cfa1633428",
+    "0x576bbda8b747d39bf16a2723ac6bb6bb3582ddf8"
+  ],
+  "tx_hash": "0xb1168ee90b001b3e04e76618a085c9dbb7eddb1415f462c839c6728110a4b86f",
+  "vaults_tree_cid": "QmcRCesUbsVnrLadmqVQQxKBkkBKTfDAgmPU6BPdSRnUyY"
+}

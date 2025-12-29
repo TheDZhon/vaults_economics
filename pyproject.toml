@@ -1,0 +1,23 @@
+[project]
+name = "vaults-economics"
+version = "0.1.0"
+description = "Standalone: Vault economics day-to-date analysis from Lido AccountingOracle daily reports (Ethereum mainnet)"
+readme = "README.md"
+requires-python = ">=3.8,<4"
+dependencies = [
+    "requests>=2.31.0",
+    "web3>=7.8.0,<8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+vaults-economics-dtd = "vaults_economics:_entry_point"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+

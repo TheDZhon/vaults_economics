@@ -1,0 +1,47 @@
+{
+  "expected_snapshots": {
+    "0x576bbda8b747d39bf16a2723ac6bb6bb3582ddf8": {
+      "infra_fee_wei": 1550853894811,
+      "liabilities_shares": 0,
+      "liquidity_fee_wei": 0,
+      "max_liabilities_shares": 0,
+      "net_inflow_wei": 2010000000000000000,
+      "prev_fee_wei": 0,
+      "reservation_fee_wei": 0,
+      "slashing_reserve_wei": 0,
+      "total_fees_wei": 1550853894811,
+      "tvl_wei": 2010000000000000000,
+      "vault": "0x576BBdA8b747d39BF16a2723AC6bB6BB3582dDF8"
+    }
+  },
+  "ipfs_url": "https://ipfs.io/ipfs/Qma3quSkfo4kbEh9WENDLEnEiPMjHkxLRRC9B8U8rwbxam",
+  "report_sample": {
+    "extraValues": {
+      "0x576bbda8b747d39bf16a2723ac6bb6bb3582ddf8": {
+        "inOutDelta": "2010000000000000000",
+        "infraFee": "1550853894811",
+        "liquidityFee": "0",
+        "prevFee": "0",
+        "reservationFee": "0"
+      }
+    },
+    "values": [
+      {
+        "treeIndex": 1,
+        "value": [
+          "0x576BBdA8b747d39BF16a2723AC6bB6BB3582dDF8",
+          "2010000000000000000",
+          "1550853894811",
+          "0",
+          "0",
+          "0"
+        ]
+      }
+    ]
+  },
+  "selected_vault_keys": [
+    "0x576bbda8b747d39bf16a2723ac6bb6bb3582ddf8"
+  ],
+  "tx_hash": "0xc79165e96f1d3267ef86f0c3d0156a2d060167f76c2549072b670eea9d16cc72",
+  "vaults_tree_cid": "Qma3quSkfo4kbEh9WENDLEnEiPMjHkxLRRC9B8U8rwbxam"
+}
