@@ -3,6 +3,10 @@ name = "vaults-economics"
 version = "0.1.0"
 description = "Standalone: Vault economics day-to-date analysis from Lido AccountingOracle daily reports (Ethereum mainnet)"
 readme = "README.md"
+license = { text = "MIT" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+]
 requires-python = ">=3.8,<4"
 dependencies = [
     "requests>=2.31.0",
