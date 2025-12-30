@@ -1,11 +1,13 @@
 """Validation logic for reports and vaults."""
 
+from typing import Any
+
 from vaults_economics.constants import STANDARD_MERKLE_TREE_FORMAT
 from vaults_economics.models import VaultSnapshot
 from vaults_economics.reports import fee_delta_wei
 
 
-def validate_vault_snapshot(s: VaultSnapshot, *, ref_slot: int, vault_key: str, warn_only: bool = False) -> list[str]:
+def validate_vault_snapshot(s: VaultSnapshot, *, ref_slot: int, _vault_key: str, warn_only: bool = False) -> list[str]:
     """
     Validate vault snapshot invariants.
 
@@ -108,7 +110,7 @@ def validate_cross_report_consistency(
 
 
 def validate_ipfs_report_metadata(
-    report_json: dict,
+    report_json: dict[str, Any],
     *,
     expected_ref_slot: int | None = None,
     expected_tree_root: str | None = None,

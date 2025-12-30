@@ -1,6 +1,7 @@
 """Constants and configuration for vault economics analysis."""
 
 from decimal import Decimal
+from typing import Any
 
 # LidoLocator is the single entry point for resolving all Lido protocol contract addresses.
 # Use --locator to override for testnets.
@@ -8,7 +9,7 @@ LIDO_LOCATOR_MAINNET = "0xC1d0b3DE6792Bf6b4b37EccdcC24e45978Cfd2Eb"
 
 # Minimal ABI for LidoLocator - only the functions we need to resolve contract addresses.
 # Source: https://github.com/lidofinance/lido-staking-vault-cli/blob/main/abi/LidoLocator.ts
-LIDO_LOCATOR_ABI: list[dict] = [
+LIDO_LOCATOR_ABI: list[dict[str, Any]] = [
     {
         "inputs": [],
         "name": "accountingOracle",
@@ -41,7 +42,7 @@ LIDO_LOCATOR_ABI: list[dict] = [
 
 # Minimal ABI needed to decode `submitReportData` tx input.
 # Source: AccountingOracle ABI on Etherscan (same structure as in Lido oracle codebase).
-ACCOUNTING_ORACLE_MIN_ABI: list[dict] = [
+ACCOUNTING_ORACLE_MIN_ABI: list[dict[str, Any]] = [
     {
         "type": "function",
         "name": "submitReportData",
@@ -83,7 +84,7 @@ ACCOUNTING_ORACLE_MIN_ABI: list[dict] = [
 
 # Minimal ABI for LazyOracle - functions we need for vault metrics and report data.
 # Source: https://github.com/lidofinance/lido-staking-vault-cli/blob/main/abi/LazyOracle.ts
-LAZY_ORACLE_MIN_ABI: list[dict] = [
+LAZY_ORACLE_MIN_ABI: list[dict[str, Any]] = [
     {
         "type": "function",
         "name": "latestReportData",
@@ -138,7 +139,7 @@ LAZY_ORACLE_MIN_ABI: list[dict] = [
 
 # Minimal ABI for VaultHub - functions we need for on-chain vault metrics.
 # Source: https://github.com/lidofinance/lido-staking-vault-cli/blob/main/abi/VaultHub.ts
-VAULT_HUB_MIN_ABI: list[dict] = [
+VAULT_HUB_MIN_ABI: list[dict[str, Any]] = [
     {
         "type": "function",
         "name": "totalValue",
@@ -212,7 +213,7 @@ DEFAULT_IPFS_GATEWAYS = (
 
 # Minimal ABI for Lido (stETH) - functions we need for share rate calculation.
 # Source: https://github.com/lidofinance/lido-staking-vault-cli/blob/main/abi/StEth.ts
-LIDO_STETH_MIN_ABI: list[dict] = [
+LIDO_STETH_MIN_ABI: list[dict[str, Any]] = [
     {
         "type": "function",
         "name": "totalSupply",

@@ -1,35 +1,21 @@
 repos:
-  - repo: local
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
     hooks:
-      - id: mdformat-readme
-        name: mdformat README.md
-        entry: uv run mdformat README.md
-        language: system
-        pass_filenames: false
-        always_run: true
-        stages: [pre-commit]
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
 
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
-        name: ruff format
-        entry: uv run ruff format .
-        language: system
-        pass_filenames: false
-        always_run: true
-        stages: [pre-commit]
 
-      - id: ruff-check
-        name: ruff check
-        entry: uv run ruff check .
-        language: system
-        pass_filenames: false
-        always_run: true
-        stages: [pre-commit]
-
-      - id: pytest
-        name: pytest
-        entry: uv run pytest -q
-        language: system
-        pass_filenames: false
-        always_run: true
-        stages: [pre-push]
-
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-requests, types-tqdm, pytest]

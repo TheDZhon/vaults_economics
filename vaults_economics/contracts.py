@@ -2,6 +2,8 @@
 
 from typing import TYPE_CHECKING
 
+from web3.types import BlockIdentifier
+
 from vaults_economics.constants import (
     LIDO_LOCATOR_ABI,
     LIDO_STETH_MIN_ABI,
@@ -39,7 +41,7 @@ def resolve_lido_contracts(w3: "Web3", locator_address: str) -> LidoContracts:
     )
 
 
-def calculate_share_rate(w3: "Web3", lido_address: str, *, block_identifier: int | str = "latest") -> int:
+def calculate_share_rate(w3: "Web3", lido_address: str, *, block_identifier: BlockIdentifier = "latest") -> int:
     """
     Calculate the share rate from Lido stETH contract: (totalSupply * 1e27) / getTotalShares.
 

@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.12", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - name: Checkout
@@ -32,11 +32,17 @@ jobs:
       - name: Lint (ruff)
         run: uv run ruff check .
 
+      - name: Type check (mypy)
+        run: uv run mypy .
+
       - name: Format check (ruff)
         run: uv run ruff format --check .
 
       - name: Format check (README)
         run: uv run mdformat --check README.md
+
+      - name: Security audit (dependencies)
+        run: uv run pip-audit
 
       - name: Bytecode compile
         run: uv run python -m compileall vaults_economics tests

@@ -61,7 +61,7 @@ def main(argv: list[str]) -> int:
     use_cache = not args.no_cache
 
     try:
-        from web3 import Web3  # type: ignore[import-not-found]
+        from web3 import Web3
     except ImportError as ex:  # pragma: no cover
         print("Missing dependency. Run: uv sync", file=sys.stderr)
         raise SystemExit(2) from ex

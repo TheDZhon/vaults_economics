@@ -2,7 +2,7 @@ from vaults_economics.formatters import as_int
 from vaults_economics.parsing import parse_report_to_snapshots
 
 
-def test_parse_report_strict_compliance():
+def test_parse_report_strict_compliance() -> None:
     """
     Validates parsing against a JSON structure that strictly mimics
     lido-oracle accounting types conventions.
@@ -69,7 +69,7 @@ def test_parse_report_strict_compliance():
     assert s.reservation_fee_wei == 0
 
 
-def test_as_int_robustness():
+def test_as_int_robustness() -> None:
     """Challenge as_int with various types found in wild JSONs."""
     assert as_int("123") == 123
     assert as_int("0x10") == 16

@@ -1,6 +1,7 @@
 """Formatting and conversion utilities."""
 
 from decimal import Decimal
+from typing import Any
 
 from vaults_economics.constants import (
     DAYS_PER_YEAR,
@@ -12,7 +13,7 @@ from vaults_economics.constants import (
 from vaults_economics.models import VaultSnapshot
 
 
-def as_int(value, *, default: int = 0) -> int:
+def as_int(value: Any, *, default: int = 0) -> int:
     """Convert value to int, handling various types."""
     if value is None:
         return default
@@ -28,9 +29,9 @@ def as_int(value, *, default: int = 0) -> int:
     return int(value)
 
 
-def normalize_hex_str(value) -> str:
+def normalize_hex_str(value: Any) -> str:
     """Normalize hex string to 0x-prefixed format."""
-    if isinstance(value, (bytes, bytearray)):
+    if isinstance(value, bytes | bytearray):
         return f"0x{value.hex()}"
     if hasattr(value, "hex") and not isinstance(value, str):
         hex_str = value.hex()

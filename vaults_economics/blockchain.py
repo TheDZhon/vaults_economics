@@ -2,9 +2,11 @@
 
 import sys
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
+from hexbytes import HexBytes
 from tqdm import tqdm
+from web3.types import BlockIdentifier, RPCEndpoint
 
 from vaults_economics.cache import cache_key, get_cached, set_cached
 from vaults_economics.constants import FIRST_VAULT_REPORT_BLOCK
@@ -14,9 +16,10 @@ from vaults_economics.parsing import decode_submit_report_data_tx
 
 if TYPE_CHECKING:
     from web3 import Web3  # pragma: no cover
+    from web3.contract import Contract  # pragma: no cover
 
 
-def topic0(w3: "Web3", signature: str) -> str:
+def topic0(_w3: "Web3", signature: str) -> str:
     """Compute topic0 (event signature hash) for a function/event signature."""
     from web3 import Web3  # pylint: disable=import-outside-toplevel
 
@@ -36,7 +39,7 @@ def iter_block_ranges(start: int, end: int, chunk_size: int) -> Iterable[tuple[i
 def get_cached_logs(w3: "Web3", filter_params: dict[str, Any], use_cache: bool = True) -> list[dict[str, Any]]:
     """Get logs with caching."""
     if not use_cache:
-        response = w3.provider.make_request("eth_getLogs", [filter_params])
+        response = w3.provider.make_request(cast(RPCEndpoint, "eth_getLogs"), [filter_params])
         if "error" in response:
             raise RuntimeError(f"RPC error: {response['error']}")
         return response.get("result", [])
@@ -54,10 +57,10 @@ def get_cached_logs(w3: "Web3", filter_params: dict[str, Any], use_cache: bool =
         return cached
 
     # Fetch from RPC
-    response = w3.provider.make_request("eth_getLogs", [filter_params])
+    response = w3.provider.make_request(cast(RPCEndpoint, "eth_getLogs"), [filter_params])
     if "error" in response:
         raise RuntimeError(f"RPC error: {response['error']}")
-    result = response.get("result", [])
+    result: list[dict[str, Any]] = response.get("result", [])
     set_cached(key, result)
     return result
 
@@ -70,7 +73,7 @@ def get_cached_transaction(w3: "Web3", tx_hash: str, use_cache: bool = True) -> 
         if cached is not None:
             return cached
 
-    tx = w3.eth.get_transaction(tx_hash)
+    tx = w3.eth.get_transaction(HexBytes(tx_hash))
     # Convert HexBytes to hex strings for JSON serialization
     tx_dict = dict(tx)
     for key_name, value in tx_dict.items():
@@ -81,7 +84,7 @@ def get_cached_transaction(w3: "Web3", tx_hash: str, use_cache: bool = True) -> 
     return tx_dict
 
 
-def get_cached_block(w3: "Web3", block_identifier: int | str, use_cache: bool = True) -> dict[str, Any]:
+def get_cached_block(w3: "Web3", block_identifier: BlockIdentifier, use_cache: bool = True) -> dict[str, Any]:
     """Get block with caching. Returns a dict for consistent access."""
     key = cache_key("block", str(block_identifier))
     if use_cache:
@@ -107,8 +110,8 @@ def get_cached_block(w3: "Web3", block_identifier: int | str, use_cache: bool = 
 
 
 def get_latest_report_from_lazy_oracle(
-    w3: "Web3",
-    lazy_oracle_contract,
+    _w3: "Web3",
+    lazy_oracle_contract: "Contract",
 ) -> tuple[int, int, str, str]:
     """
     Get the latest report data directly from LazyOracle.latestReportData().
@@ -121,7 +124,7 @@ def get_latest_report_from_lazy_oracle(
 
 def collect_recent_report_submissions(
     w3: "Web3",
-    contract,
+    contract: "Contract",
     oracle_address: str,
     *,
     log_chunk_size: int = 1000,

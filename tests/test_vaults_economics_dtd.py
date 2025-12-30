@@ -37,7 +37,7 @@ from vaults_economics.validation import (
 )
 
 
-def test_build_gateway_url_variants():
+def test_build_gateway_url_variants() -> None:
     cid = "bafybeigdyrztw"
     assert build_gateway_url("https://ipfs.io/ipfs/", cid) == f"https://ipfs.io/ipfs/{cid}"
     assert build_gateway_url("https://ipfs.io/ipfs", cid) == f"https://ipfs.io/ipfs/{cid}"
@@ -57,24 +57,24 @@ def test_build_gateway_url_variants():
         ("0x10", 16),
     ],
 )
-def test_as_int(value, expected):
+def test_as_int(value: object, expected: int) -> None:
     assert as_int(value) == expected
 
 
-def test_format_wei_sci():
+def test_format_wei_sci() -> None:
     assert format_wei_sci(0) == "0"
     assert format_wei_sci(1000) == "1e3"
     assert format_wei_sci(16900000000000) == "1.69e13"
     assert format_wei_sci(-1000) == "-1e3"
 
 
-def test_format_eth_and_shares():
+def test_format_eth_and_shares() -> None:
     assert format_eth(10**18) == "1 ETH"
     assert format_eth(10**18, approx=True).startswith("~")
     assert format_shares(10**18) == "1 shares"
 
 
-def test_annual_projection_calculation():
+def test_annual_projection_calculation() -> None:
     # 1 ETH/day -> 365 ETH/year
     daily_fee = 10**18  # 1 ETH in wei
     assert annual_projection_wei(daily_fee) == daily_fee * DAYS_PER_YEAR
@@ -96,7 +96,7 @@ def test_annual_projection_calculation():
     assert format_annual_projection(0) == "~0 ETH/yr"
 
 
-def test_parse_report_to_snapshots_parses_values_and_extra_values_case_insensitive():
+def test_parse_report_to_snapshots_parses_values_and_extra_values_case_insensitive() -> None:
     report_json = {
         "values": [
             {"value": ["0xAbC", "0x10", 5, 0, 0, 1]},
@@ -136,7 +136,7 @@ def test_parse_report_to_snapshots_parses_values_and_extra_values_case_insensiti
         "vault_report_sample_0xc79165e96f1d3267ef86f0c3d0156a2d060167f76c2549072b670eea9d16cc72.json",
     ],
 )
-def test_parse_report_to_snapshots_from_known_ipfs_samples(fixture_name):
+def test_parse_report_to_snapshots_from_known_ipfs_samples(fixture_name: str) -> None:
     fixtures_dir = Path(__file__).resolve().parent / "fixtures"
     path = fixtures_dir / fixture_name
     assert path.exists(), f"Missing fixture file: {path}"
@@ -163,7 +163,7 @@ def test_parse_report_to_snapshots_from_known_ipfs_samples(fixture_name):
         assert s.slashing_reserve_wei == exp["slashing_reserve_wei"]
 
 
-def test_validate_ipfs_report_metadata_flags_mismatches():
+def test_validate_ipfs_report_metadata_flags_mismatches() -> None:
     report_json = {
         "format": "standard-v1",
         "tree": ["0xabc"],
@@ -193,7 +193,7 @@ def test_validate_ipfs_report_metadata_flags_mismatches():
     assert any("unexpected report format" in issue.lower() for issue in issues)
 
 
-def test_economic_mode_and_status_emojis():
+def test_economic_mode_and_status_emojis() -> None:
     base = VaultSnapshot(
         vault="0xVault",
         total_value_wei=0,
@@ -228,7 +228,7 @@ def test_economic_mode_and_status_emojis():
     assert vault_status(slashing)[0] == "🟠"
 
 
-def test_locked_value_wei():
+def test_locked_value_wei() -> None:
     share_rate = 10**27
     one_eth = 10**18
     # 1 share worth 1 ETH with 20% reserve ratio => reserve 0.25 ETH, minimal reserve dominates.
@@ -236,13 +236,13 @@ def test_locked_value_wei():
     assert locked == 2 * one_eth
 
 
-def test_fee_delta_wei_and_zero_snapshot():
+def test_fee_delta_wei_and_zero_snapshot() -> None:
     s = zero_snapshot("0xVault")
     assert s.vault == "0xVault"
     assert fee_delta_wei(s) == 0
 
 
-def test_compute_aggregates_counts_and_sums():
+def test_compute_aggregates_counts_and_sums() -> None:
     base = zero_snapshot("0xA")
     passive = VaultSnapshot(**{**base.__dict__, "vault": "0xPassive"})
     at_peak = VaultSnapshot(
@@ -280,7 +280,7 @@ def test_compute_aggregates_counts_and_sums():
     assert agg.slashing_reserve_wei == 1
 
 
-def test_print_changes_section_marks_new_vault_and_omits_unchanged(capsys):
+def test_print_changes_section_marks_new_vault_and_omits_unchanged(capsys: pytest.CaptureFixture[str]) -> None:
     # Baseline has one vault; current adds a new vault (and baseline one stays unchanged).
     base_v = VaultSnapshot(**{**zero_snapshot("0xOld").__dict__, "vault": "0xOld", "cumulative_lido_fees_wei": 1})
     cur_old = VaultSnapshot(**{**base_v.__dict__})
@@ -320,7 +320,7 @@ def test_print_changes_section_marks_new_vault_and_omits_unchanged(capsys):
     assert "unchanged" in out.lower()
 
 
-def test_print_report_with_deltas_with_multiple_reports_shows_last_only(capsys):
+def test_print_report_with_deltas_with_multiple_reports_shows_last_only(capsys: pytest.CaptureFixture[str]) -> None:
     """When multiple reports are provided, only show changes since last report (not first)."""
     sub0 = ReportSubmission(
         ref_slot=3,
@@ -372,7 +372,7 @@ def test_print_report_with_deltas_with_multiple_reports_shows_last_only(capsys):
         "submitReportData_tx_0xc79165e96f1d3267ef86f0c3d0156a2d060167f76c2549072b670eea9d16cc72.json",
     ],
 )
-def test_decode_submit_report_data_known_mainnet_txs(fixture_name):
+def test_decode_submit_report_data_known_mainnet_txs(fixture_name: str) -> None:
     fixtures_dir = Path(__file__).resolve().parent / "fixtures"
     path = fixtures_dir / fixture_name
     assert path.exists(), f"Missing fixture file: {path}"
@@ -396,7 +396,7 @@ def test_decode_submit_report_data_known_mainnet_txs(fixture_name):
     assert simulated_share_rate > 0
 
 
-def test_validate_vault_snapshot_fee_consistency():
+def test_validate_vault_snapshot_fee_consistency() -> None:
     """Test that fee consistency validation catches mismatches."""
     # Valid: cumulative == prev + infra + liquidity + reservation
     valid = VaultSnapshot(
@@ -412,17 +412,17 @@ def test_validate_vault_snapshot_fee_consistency():
         max_liability_shares=10,
         slashing_reserve_wei=0,
     )
-    issues = validate_vault_snapshot(valid, ref_slot=1, vault_key="0xvalid", warn_only=True)
+    issues = validate_vault_snapshot(valid, ref_slot=1, _vault_key="0xvalid", warn_only=True)
     assert len(issues) == 0
 
     # Invalid: cumulative != prev + delta
     invalid = VaultSnapshot(**{**valid.__dict__, "cumulative_lido_fees_wei": 99})
-    issues = validate_vault_snapshot(invalid, ref_slot=1, vault_key="0xinvalid", warn_only=True)
+    issues = validate_vault_snapshot(invalid, ref_slot=1, _vault_key="0xinvalid", warn_only=True)
     assert len(issues) == 1
     assert "fee inconsistency" in issues[0].lower()
 
 
-def test_validate_vault_snapshot_max_liability_shares():
+def test_validate_vault_snapshot_max_liability_shares() -> None:
     """Test that maxLiabilityShares >= liabilityShares validation works."""
     # Valid: max >= liability
     valid = VaultSnapshot(
@@ -438,27 +438,27 @@ def test_validate_vault_snapshot_max_liability_shares():
         max_liability_shares=10,  # equal is OK
         slashing_reserve_wei=0,
     )
-    issues = validate_vault_snapshot(valid, ref_slot=1, vault_key="0xvalid", warn_only=True)
+    issues = validate_vault_snapshot(valid, ref_slot=1, _vault_key="0xvalid", warn_only=True)
     assert len(issues) == 0
 
     # Invalid: max < liability
     invalid = VaultSnapshot(**{**valid.__dict__, "max_liability_shares": 9})
-    issues = validate_vault_snapshot(invalid, ref_slot=1, vault_key="0xinvalid", warn_only=True)
+    issues = validate_vault_snapshot(invalid, ref_slot=1, _vault_key="0xinvalid", warn_only=True)
     assert len(issues) == 1
     assert "invalid maxliabilityshares" in issues[0].lower()
 
 
-def test_validate_vault_snapshot_negative_values():
+def test_validate_vault_snapshot_negative_values() -> None:
     """Test that negative values are caught."""
     base = zero_snapshot("0xVault")
     # Negative cumulative fees triggers both fee inconsistency and negative value checks
     invalid = VaultSnapshot(**{**base.__dict__, "cumulative_lido_fees_wei": -1})
-    issues = validate_vault_snapshot(invalid, ref_slot=1, vault_key="0xvault", warn_only=True)
+    issues = validate_vault_snapshot(invalid, ref_slot=1, _vault_key="0xvault", warn_only=True)
     assert len(issues) >= 1  # At least one issue (may have multiple)
     assert any("negative" in issue.lower() for issue in issues)
 
 
-def test_validate_cross_report_consistency():
+def test_validate_cross_report_consistency() -> None:
     """Test that cross-report validation catches fee decreases."""
     prev = VaultSnapshot(
         vault="0xVault",
@@ -502,7 +502,7 @@ def test_validate_cross_report_consistency():
     assert "cumulative fees decreased" in issues[0].lower()
 
 
-def test_validate_cross_report_prev_fee_reset():
+def test_validate_cross_report_prev_fee_reset() -> None:
     """Test that prevFee resets are flagged and skip non-decreasing checks."""
     prev = VaultSnapshot(
         vault="0xVault",
@@ -532,7 +532,7 @@ def test_validate_cross_report_prev_fee_reset():
     assert not any("cumulative fees decreased" in issue.lower() for issue in issues)
 
 
-def test_parse_report_to_snapshots_validates_by_default():
+def test_parse_report_to_snapshots_validates_by_default() -> None:
     """Test that parsing validates by default and warns on issues."""
     import sys
     from io import StringIO

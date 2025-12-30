@@ -6,6 +6,7 @@ import socketserver
 import sys
 import threading
 import webbrowser
+from collections.abc import Sequence
 from datetime import datetime, timezone
 from typing import Any
 
@@ -599,8 +600,8 @@ MODE_HINTS = {
 def generate_analytics_section(
     analytics: ProtocolAnalytics,
     growth: dict[str, Any],
-    rankings: list,
-    simulated_share_rate: int,
+    rankings: list[Any],
+    _simulated_share_rate: int,
 ) -> str:
     """Generate the analytics section HTML."""
     from decimal import Decimal
@@ -786,7 +787,7 @@ def generate_html_report(
     submissions: list[ReportSubmission],
     snapshots: list[dict[str, VaultSnapshot]],
     onchain_metrics_list: list[dict[str, OnchainVaultMetrics]] | None = None,
-    onchain_blocks: list[int | str] | None = None,
+    onchain_blocks: Sequence[int | str] | None = None,
 ) -> str:
     """Generate a complete HTML report from the collected data."""
     if not submissions or not snapshots:
@@ -860,8 +861,8 @@ def generate_html_report(
     parts.append('<section class="vaults-section"><h2>🏦 Individual Vaults</h2>')
 
     for _, s in sorted(cur_snap.items(), key=lambda kv: kv[1].vault.lower()):
-        status_emoji, status_text, _ = vault_status(s)
-        mode_emoji, mode_text = economic_mode(s)
+        _, status_text, _ = vault_status(s)
+        _, mode_text = economic_mode(s)
 
         is_active = s.liability_shares > 0
         status_class = "active" if is_active else "passive"
@@ -1014,7 +1015,7 @@ def serve_html_and_open_browser(html_content: str, port: int = 0) -> None:
             self.end_headers()
             self.wfile.write(self.html_data)
 
-        def log_message(self, format: str, *args: Any) -> None:
+        def log_message(self, fmt: str, *args: Any) -> None:
             pass  # Suppress logging
 
     html_bytes = html_content.encode("utf-8")

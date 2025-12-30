@@ -12,7 +12,9 @@ if TYPE_CHECKING:
     from web3 import Web3  # pragma: no cover
 
 
-def fetch_lazy_oracle_vaults(contract, *, block_identifier: int | str, page_size: int) -> dict[str, dict[str, Any]]:
+def fetch_lazy_oracle_vaults(
+    contract: Any, *, block_identifier: int | str, page_size: int
+) -> dict[str, dict[str, Any]]:
     """Fetch all vault info from LazyOracle in batches."""
     vaults_count = contract.functions.vaultsCount().call(block_identifier=block_identifier)
     out: dict[str, dict[str, Any]] = {}
@@ -27,8 +29,8 @@ def fetch_lazy_oracle_vaults(contract, *, block_identifier: int | str, page_size
 
 def collect_onchain_metrics(
     w3: "Web3",
-    lazy_oracle_contract,
-    vault_hub_contract,
+    lazy_oracle_contract: Any,
+    vault_hub_contract: Any,
     vault_keys: Iterable[str],
     *,
     block_identifier: int | str,

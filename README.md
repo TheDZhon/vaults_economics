@@ -4,9 +4,9 @@
 [![CI](https://github.com/TheDZhon/vaults_economics/actions/workflows/ci.yml/badge.svg)](https://github.com/TheDZhon/vaults_economics/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python: 3.10+](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)
-![Tests: pytest](https://img.shields.io/badge/tests-pytest-brightgreen?logo=pytest&logoColor=white)
-![Lint: ruff](https://img.shields.io/badge/lint-ruff-46aef7?logo=ruff&logoColor=white)
 ![Packaging: uv](https://img.shields.io/badge/packaging-uv-6f42c1)
+![Code Style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
+![Type Checked: mypy](https://img.shields.io/badge/mypy-checked-blue)
 
 Standalone CLI that scans Lido AccountingOracle report submissions on Ethereum mainnet, decodes
 `submitReportData(...)` to extract `vaultsDataTreeCid`, downloads the IPFS Merkle-tree JSON,
@@ -198,12 +198,13 @@ Run checks locally:
 
 ```bash
 uv run ruff check .
+uv run mypy .
 uv run ruff format .
 uv run mdformat README.md
 uv run pytest -q
 ```
 
-Install pre-commit hooks:
+Install pre-commit hooks (automatically runs linting and formatting on commit):
 
 ```bash
 uv run pre-commit install
@@ -211,13 +212,14 @@ uv run pre-commit install
 
 ### CI & quality
 
-CI runs on pushes/PRs and checks:
+CI runs on pushes/PRs (GitHub Actions) and enforces:
 
-- ruff lint (imports + bugbear + pyupgrade rules)
-- ruff format --check
-- mdformat README
-- python -m compileall vaults_economics tests
-- pytest -q
+- **Linting**: `ruff` (imports, bugbear, pyupgrade, builtins, comprehensions, etc.)
+- **Type Checking**: `mypy` (strict mode, fully typed)
+- **Formatting**: `ruff format` and `mdformat`
+- **Security**: `pip-audit` for dependency vulnerabilities
+- **Testing**: `pytest`
+- **Compatibility**: Tested on Python 3.10, 3.11, 3.12, 3.13
 
 ### Contributing
 

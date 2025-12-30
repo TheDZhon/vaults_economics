@@ -35,7 +35,7 @@ def fetch_ipfs_bytes(cid: str, gateways: Iterable[str], *, timeout_s: int, use_c
                 pass
 
     try:
-        import requests  # type: ignore[import-not-found]
+        import requests
     except ImportError as ex:  # pragma: no cover
         raise RuntimeError("Missing dependency. Run: uv sync") from ex
 

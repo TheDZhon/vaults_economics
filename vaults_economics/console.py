@@ -1,5 +1,6 @@
 """Console output formatting."""
 
+from collections.abc import Sequence
 from datetime import datetime, timezone
 from decimal import Decimal
 
@@ -211,13 +212,15 @@ def print_changes_section(
         is_missing = cur is None and base is not None
 
         if is_new:
+            assert cur is not None
             base = zero_snapshot(cur.vault)
         elif is_missing:
+            assert base is not None
             cur = zero_snapshot(base.vault)
 
         # NOTE: now both exist for printing/diffs
-        assert cur is not None  # noqa: S101
-        assert base is not None  # noqa: S101
+        assert cur is not None
+        assert base is not None
 
         base_fee_delta = fee_delta_wei(base)
         cur_fee_delta = fee_delta_wei(cur)
@@ -386,7 +389,7 @@ def print_report_with_deltas(
     submissions: list[ReportSubmission],
     snapshots: list[dict[str, VaultSnapshot]],
     onchain_metrics: list[dict[str, OnchainVaultMetrics]] | None = None,
-    onchain_blocks: list[int | str] | None = None,
+    onchain_blocks: Sequence[int | str] | None = None,
 ) -> None:
     """Print report with deltas."""
     current = submissions[0]

@@ -54,7 +54,7 @@ def parse_report_to_snapshots(
         # Each entry leaf encodes:
         # (vault, totalValueWei, cumulativeLidoFees, liabilityShares, maxLiabilityShares, slashingReserve)
         value = entry.get("value")
-        if not isinstance(value, (list, tuple)):
+        if not isinstance(value, list | tuple):
             continue
         need_len = max(idx_vault, idx_total_value, idx_fee, idx_liability, idx_max_liability, idx_slashing_reserve) + 1
         if len(value) < need_len:
@@ -79,7 +79,7 @@ def parse_report_to_snapshots(
         )
 
         if validate:
-            issues = validate_vault_snapshot(snapshot, ref_slot=ref_slot or 0, vault_key=key, warn_only=True)
+            issues = validate_vault_snapshot(snapshot, ref_slot=ref_slot or 0, _vault_key=key, warn_only=True)
             validation_issues.extend(issues)
 
         out[key] = snapshot
@@ -147,7 +147,7 @@ def parse_lazy_oracle_vault_info(entry: Any) -> dict[str, Any]:
     }
 
 
-def decode_submit_report_data_tx(contract, tx_input: str) -> tuple[int, str, str, int]:
+def decode_submit_report_data_tx(contract: Any, tx_input: str) -> tuple[int, str, str, int]:
     """
     Decode submitReportData transaction input.
 
