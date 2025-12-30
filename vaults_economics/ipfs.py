@@ -1,7 +1,7 @@
 """IPFS fetching and gateway utilities."""
 
 import base64
-from typing import Iterable
+from collections.abc import Iterable
 
 from vaults_economics.cache import cache_key, get_cached, set_cached
 

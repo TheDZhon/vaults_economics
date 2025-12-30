@@ -318,7 +318,7 @@ def rank_vaults_by_performance(
 
     # Build rankings
     rankings: list[VaultRanking] = []
-    for rank, (key, score, perf) in enumerate(vault_scores, start=1):
+    for rank, (_key, score, perf) in enumerate(vault_scores, start=1):
         rankings.append(
             VaultRanking(
                 vault=perf.vault,

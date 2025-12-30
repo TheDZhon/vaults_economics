@@ -1,7 +1,8 @@
 """Onchain data fetching from LazyOracle/VaultHub."""
 
 import sys
-from typing import TYPE_CHECKING, Any, Iterable
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any
 
 from vaults_economics.formatters import as_int
 from vaults_economics.models import OnchainVaultMetrics

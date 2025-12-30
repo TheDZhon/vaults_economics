@@ -141,7 +141,7 @@ def main(argv: list[str]) -> int:
     onchain_metrics_list: list[dict[str, OnchainVaultMetrics]] = []
     onchain_blocks: list[int] = []
     with tqdm(
-        zip(submissions, snapshots),
+        zip(submissions, snapshots, strict=True),
         total=len(submissions),
         desc="🔗 Fetching on-chain metrics",
         unit="report",

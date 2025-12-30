@@ -38,6 +38,8 @@ jobs:
       - name: Format check (README)
         run: uv run mdformat --check README.md
 
+      - name: Bytecode compile
+        run: uv run python -m compileall vaults_economics tests
+
       - name: Run tests
         run: uv run pytest -q
-
