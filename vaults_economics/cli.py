@@ -30,7 +30,7 @@ DEFAULT_VAULTS_PAGE_SIZE = 200
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     """Parse command-line arguments."""
-    p = argparse.ArgumentParser(description="Standalone vault economics analysis from Lido AccountingOracle reports.")
+    p = argparse.ArgumentParser(description="Lido stVaults economics analysis from AccountingOracle reports.")
     p.add_argument(
         "--rpc-url",
         default=None,

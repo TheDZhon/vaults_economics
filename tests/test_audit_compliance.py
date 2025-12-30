@@ -3,13 +3,9 @@ from vaults_economics.parsing import parse_report_to_snapshots
 
 
 def test_parse_report_strict_compliance() -> None:
-    """
-    Validates parsing against a JSON structure that strictly mimics
-    lido-oracle accounting types conventions.
-    """
+    """Validates parsing against a realistic IPFS report JSON structure."""
 
-    # 1. Simulate a JSON payload as produced by StandardMerkleTree + lido-oracle ExtraData
-    # Structure based on StakingVaultIpfsReport in types.py
+    # Simulate a JSON payload matching the IPFS report format
 
     report_json = {
         "format": "standard-v1",
@@ -36,7 +32,7 @@ def test_parse_report_strict_compliance() -> None:
             "slashingReserve": 5,
         },
         "extraValues": {
-            "0xvaultaddress1": {  # lido-oracle keys might be lowercased or checksummed, script handles both
+            "0xvaultaddress1": {  # keys can be lowercased or checksummed
                 "inOutDelta": "-500",  # str
                 "prevFee": "100",  # str
                 "infraFee": "50",  # str

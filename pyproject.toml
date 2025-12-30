@@ -1,7 +1,7 @@
 [project]
 name = "vaults-economics"
 version = "0.1.0"
-description = "Standalone: Vault economics day-to-date analysis from Lido AccountingOracle daily reports (Ethereum mainnet)"
+description = "Lido stVaults economics analysis from AccountingOracle reports"
 readme = "README.md"
 license = { text = "MIT" }
 classifiers = [
