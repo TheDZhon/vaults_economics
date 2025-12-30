@@ -130,7 +130,7 @@ def collect_recent_report_submissions(
     log_chunk_size: int = 1000,
     use_cache: bool = True,
 ) -> list[ReportSubmission]:
-    """Collect all report submissions from genesis (FIRST_VAULT_REPORT_BLOCK) to latest block."""
+    """Collect all report submissions from the first vault report block to latest."""
     topic0_sig = topic0(w3, "ProcessingStarted(uint256,bytes32)")
 
     latest_block = int(w3.eth.block_number)

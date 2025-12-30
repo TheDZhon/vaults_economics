@@ -39,7 +39,7 @@ uv run cc
 ### How it works
 
 1. Resolve contracts via LidoLocator
-1. Scan `ProcessingStarted` logs from genesis block
+1. Scan `ProcessingStarted` logs from first vault report
 1. Decode `submitReportData(...)` to extract IPFS CID
 1. Download and parse the Merkle-tree JSON
 1. Fetch on-chain metrics at each report block

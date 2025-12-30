@@ -82,7 +82,6 @@ def main(argv: list[str]) -> int:
         return 2
 
     # Resolve all contract addresses from LidoLocator.
-    # This follows the pattern from lido-staking-vault-cli.
     try:
         contracts = resolve_lido_contracts(w3, args.locator)
         print(f"ℹ️ Resolved contracts from LidoLocator ({args.locator[:10]}...)", file=sys.stderr)

@@ -16,12 +16,7 @@ if TYPE_CHECKING:
 
 
 def resolve_lido_contracts(w3: "Web3", locator_address: str) -> LidoContracts:
-    """
-    Resolve all Lido contract addresses from LidoLocator.
-
-    This follows the pattern from lido-staking-vault-cli where LidoLocator is the single
-    entry point for resolving all protocol contract addresses.
-    """
+    """Resolve all Lido contract addresses from LidoLocator."""
     locator = w3.eth.contract(
         address=w3.to_checksum_address(locator_address),
         abi=LIDO_LOCATOR_ABI,
@@ -42,12 +37,7 @@ def resolve_lido_contracts(w3: "Web3", locator_address: str) -> LidoContracts:
 
 
 def calculate_share_rate(w3: "Web3", lido_address: str, *, block_identifier: BlockIdentifier = "latest") -> int:
-    """
-    Calculate the share rate from Lido stETH contract: (totalSupply * 1e27) / getTotalShares.
-
-    This follows the pattern from lido-staking-vault-cli/utils/share-rate.ts.
-    Returns the share rate as a ray (1e27 scale).
-    """
+    """Calculate the share rate from Lido stETH: (totalSupply * 1e27) / getTotalShares."""
     lido_contract = w3.eth.contract(
         address=w3.to_checksum_address(lido_address),
         abi=LIDO_STETH_MIN_ABI,
